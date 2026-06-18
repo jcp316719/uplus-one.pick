@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>인터넷/IPTV - U+ one</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:#f7f8fa; max-width:1200px; margin:0 auto; min-height:100vh; }
+
+  /* 툴바 */
+  .edit-toolbar { background:#222; color:#fff; padding:10px 16px; display:none; align-items:center; justify-content:space-between; font-size:12px; position:sticky; top:0; z-index:200; }
+  .edit-toolbar.visible { display:flex; }
+  .edit-toggle { background:#555; color:#fff; border:none; border-radius:6px; padding:6px 14px; font-size:12px; font-weight:700; cursor:pointer; }
+
+  /* 헤더 */
+  .top-header { background:#fff; padding:16px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #eee; position:sticky; top:0; z-index:100; }
+  .back-btn { background:none; border:none; cursor:pointer; font-size:22px; color:#111; }
+  .top-header-title { font-size:17px; font-weight:800; color:#111; }
+
+  /* 필터 */
+  .filter-wrap { background:#fff; overflow-x:auto; -webkit-overflow-scrolling:touch; padding:12px 16px; border-bottom:1px solid #f0f0f0; scrollbar-width:none; position:sticky; top:49px; z-index:99; }
+  .filter-wrap::-webkit-scrollbar { display:none; }
+  .filter-list { display:flex; gap:8px; white-space:nowrap; }
+  .filter-btn { display:inline-flex; align-items:center; padding:8px 18px; border-radius:30px; border:1.5px solid #e2e8f0; background:#fff; font-size:14px; font-weight:700; color:#666; cursor:pointer; transition:all 0.15s; }
+  .filter-btn.active { background:#111; border-color:#111; color:#fff; }
+
+  /* 카드 리스트 */
+  .plan-list { padding:16px 16px 100px; display:flex; flex-direction:column; gap:12px; }
+  @media (min-width:768px) {
+    .plan-list { display:grid; grid-template-columns:repeat(2,1fr); padding:24px 32px 100px; gap:16px; }
+    .filter-wrap { top:57px; }
+  }
+  @media (min-width:1024px) { .plan-list { grid-template-columns:repeat(3,1fr); } }
+
+  /* 카드 추가 */
+  .add-card-btn { display:none; background:#fff; border:2px dashed #ddd; border-radius:20px; padding:36px; text-align:center; color:#bbb; font-size:14px; font-weight:700; cursor:pointer; }
+  body.edit-mode .add-card-btn { display:block; }
+
+  /* 카드 */
+  .plan-card { background:#fff; border-radius:20px; box-shadow:0 2px 14px rgba(0,0,0,0.07); position:relative; display:flex; flex-direction:column; padding:20px; transition:box-shadow 0.2s; overflow:hidden; }
+  .plan-card:hover { box-shadow:0 4px 20px rgba(0,0,0,0.11); }
+
+  /* 이벤트 네온 글로우 - 오렌지→레드 */
+  .plan-card.event-card {
+    background:#fff;
+    border:2px solid #ff4500;
+    box-shadow:
+      0 0 8px rgba(255,69,0,0.6),
+      0 0 20px rgba(255,69,0,0.35),
+      0 0 40px rgba(255,69,0,0.15);
+    animation: neon-pulse 2s ease-in-out infinite;
+  }
+  @keyframes neon-pulse {
+    0%, 100% {
+      box-shadow:
+        0 0 8px rgba(255,69,0,0.6),
+        0 0 20px rgba(255,69,0,0.35),
+        0 0 40px rgba(255,69,0,0.15);
+      border-color: #ff4500;
+    }
+    50% {
+      box-shadow:
+        0 0 16px rgba(255,30,0,0.9),
+        0 0 40px rgba(255,30,0,0.55),
+        0 0 70px rgba(255,30,0,0.3);
+      border-color: #ff1e00;
+    }
+  }
+  .plan-card.event-card .badge-row,
+  .plan-card.event-card .icon-combo,
+  .plan-card.event-card .plan-name-el,
+  .plan-card.event-card .price-block,
+  .plan-card.event-card .card-delete-btn,
+  .plan-card.event-card .event-toggle-btn {
+    position:relative; z-index:2;
+  }
+  .card-delete-btn { display:none; position:absolute; top:12px; right:12px; background:#ff3b3b; color:#fff; border:none; border-radius:50%; width:26px; height:26px; font-size:14px; cursor:pointer; z-index:10; align-items:center; justify-content:center; }
+  body.edit-mode .card-delete-btn { display:flex; }
+
+  /* 배지 */
+  .badge-row { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
+  .badge { font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; color:#fff; user-select:none; }
+  .badge-best  { background:#E6007E; }
+  .badge-new   { background:#7c3aed; }
+  .badge-hot   { background:#ef4444; }
+  .badge-event { background:linear-gradient(135deg,#ff6b00,#E6007E); animation:badge-pulse 1.5s infinite; }
+  @keyframes badge-pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.7; } }
+  .badge-alone { background:#0ea5e9; }
+  body.edit-mode .badge { cursor:pointer; }
+  .badge-add-btn { display:none; font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; background:#e2e8f0; color:#666; border:none; cursor:pointer; }
+  body.edit-mode .badge-add-btn { display:inline-block; }
+  .event-period { font-size:11px; font-weight:700; color:#ff4500; background:#fff8f5; border:1.5px solid #ff4500; border-radius:20px; padding:4px 10px; white-space:nowrap; }
+  .event-period:empty { display:none; }
+  body.edit-mode .event-period:empty { display:inline-block; color:#ccc; border-color:#ccc; }
+
+  /* 아이콘 콤보 */
+  .icon-combo { display:flex; align-items:flex-end; gap:12px; margin-bottom:16px; }
+  .icon-unit { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .icon-svg-wrap { width:72px; height:62px; display:flex; align-items:center; justify-content:center; }
+  .icon-svg-wrap.tv { width:48px; height:42px; }
+  .icon-label-text { font-size:12px; font-weight:800; white-space:nowrap; text-align:center; }
+  .icon-label-text.tv { font-size:11px; }
+  .icon-unit-ott { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .icon-ott-logo { height:72px; display:flex; align-items:center; justify-content:center; padding-bottom:0; margin-bottom:-6px; }
+  .chip-ott-text { font-size:19px; font-weight:900; letter-spacing:0.3px; white-space:nowrap; }
+  .icon-combo-plus { font-size:18px; color:#d1d5db; font-weight:300; flex-shrink:0; padding-bottom:28px; }
+
+  /* 상품명 */
+  .plan-name-el { font-size:15px; font-weight:800; color:#111; display:block; margin-bottom:2px; line-height:1.4; }
+
+  /* 가격 */
+  .price-block { text-align:right; margin:12px 0 0; }
+  .price-normal { font-size:13px; color:#aaa; text-decoration:line-through; margin-bottom:2px; }
+  .price-combo-label { font-size:12px; color:#555; margin-bottom:2px; }
+  .price-combo-val { font-size:22px; font-weight:900; color:#111; }
+  .price-combo-val em { font-style:normal; color:#E6007E; }
+  .price-period { font-size:11px; color:#aaa; margin-top:2px; }
+  .price-gift { font-size:16px; color:#7c3aed; font-weight:900; margin-top:8px; letter-spacing:-0.3px; }
+
+  /* 편집 */
+  .editable { outline:none; cursor:default; }
+  body.edit-mode .editable { cursor:text; border-bottom:1.5px dashed #E6007E; border-radius:2px; }
+  body.edit-mode .editable:focus { background:#fff5fa; }
+
+  /* 비번 모달 */
+  .pw-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; }
+  .pw-overlay.show { display:flex; }
+  .pw-modal { background:#fff; border-radius:16px; padding:32px 28px; width:300px; text-align:center; box-shadow:0 8px 40px rgba(0,0,0,0.25); }
+  .pw-modal h3 { font-size:17px; font-weight:800; color:#111; margin-bottom:6px; }
+  .pw-modal p  { font-size:12px; color:#888; margin-bottom:20px; }
+  .pw-input { width:100%; border:2px solid #ddd; border-radius:10px; padding:12px; font-size:16px; text-align:center; letter-spacing:4px; outline:none; margin-bottom:8px; }
+  .pw-input:focus { border-color:#E6007E; }
+  .pw-input.error { border-color:#ff3b3b; }
+  .pw-error { font-size:12px; color:#ff3b3b; margin-bottom:14px; min-height:16px; }
+  .pw-btn-row { display:flex; gap:8px; }
+  .pw-confirm { flex:1; background:#E6007E; color:#fff; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; }
+  .pw-cancel  { flex:1; background:#f0f0f0; color:#555; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; }
+
+  /* 배지 모달 */
+  .badge-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:998; align-items:flex-end; justify-content:center; }
+  .badge-modal-overlay.show { display:flex; }
+  .badge-modal { background:#fff; border-radius:20px 20px 0 0; padding:24px 20px 36px; width:100%; max-width:480px; }
+  .badge-modal h4 { font-size:16px; font-weight:800; margin-bottom:16px; }
+  .badge-options { display:flex; flex-direction:column; gap:10px; }
+  .badge-option { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-radius:10px; background:#f8f8f8; }
+  .badge-option-label { font-size:14px; font-weight:700; }
+  .badge-option-toggle { width:44px; height:24px; border-radius:12px; background:#ddd; position:relative; transition:background 0.2s; cursor:pointer; }
+  .badge-option-toggle.on { background:#E6007E; }
+  .badge-option-toggle::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform 0.2s; }
+  .badge-option-toggle.on::after { transform:translateX(20px); }
+  .badge-modal-close { width:100%; margin-top:14px; padding:13px; background:#111; color:#fff; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; }
+
+  /* 하단 CTA */
+  .bottom-cta { position:sticky; bottom:20px; display:flex; justify-content:center; gap:12px; z-index:100; pointer-events:none; padding:0 20px; }
+  .cta-kakao, .cta-call { pointer-events:all; height:52px; padding:0 22px; border-radius:26px; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; border:none; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.22); transition:transform .15s, box-shadow .15s; font-size:14px; font-weight:800; }
+  .cta-kakao { background:#FEE500; color:#3A1D1D; }
+  .cta-call { background:#E6007E; color:#fff; }
+  .cta-call:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(230,0,126,0.45); }
+
+  body.edit-mode 
+  
+
+</style>
+</head>
+<body>
+
+<!-- 비번 모달 -->
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-modal">
+    <h3>🔐 관리자 인증</h3>
+    <p>관리자 비밀번호를 입력하세요</p>
+    <input class="pw-input" id="pwInput" type="password" placeholder="비밀번호"
+      onkeydown="if(event.key==='Enter') checkPassword()"
+      oninput="this.classList.remove('error');document.getElementById('pwError').textContent=''">
+    <div class="pw-error" id="pwError"></div>
+    <div class="pw-btn-row">
+      <button class="pw-cancel" onclick="closePwModal()">취소</button>
+      <button class="pw-confirm" onclick="checkPassword()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 배지 모달 -->
+<div class="badge-modal-overlay" id="badgeModalOverlay">
+  <div class="badge-modal">
+    <h4>배지 설정</h4>
+    <div class="badge-options" id="badgeOptions"></div>
+    <button class="badge-modal-close" onclick="closeBadgeModal()">완료</button>
+  </div>
+</div>
+
+<!-- 카드 추가 모달 -->
+<div id="addCardOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:28px 24px;width:310px;box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+    <h3 style="font-size:17px;font-weight:800;color:#111;margin-bottom:6px;">➕ 상품 추가</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:18px;">아이콘 구성을 선택하세요</p>
+
+    <div style="margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;">📶 인터넷 속도</div>
+      <div style="display:flex;gap:8px;">
+        <button id="sb-100M" style="flex:1;padding:9px 0;border-radius:20px;border:2px solid #E6007E;background:#E6007E;color:#fff;font-size:13px;font-weight:700;cursor:pointer;" onclick="pickSpeed('100M')">100M</button>
+        <button id="sb-500M" style="flex:1;padding:9px 0;border-radius:20px;border:2px solid #ddd;background:#fff;color:#aaa;font-size:13px;font-weight:700;cursor:pointer;" onclick="pickSpeed('500M')">500M</button>
+        <button id="sb-1G" style="flex:1;padding:9px 0;border-radius:20px;border:2px solid #ddd;background:#fff;color:#aaa;font-size:13px;font-weight:700;cursor:pointer;" onclick="pickSpeed('1G')">1G</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:22px;">
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px;">📺 오른쪽 아이콘</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button id="rb-none"      style="padding:7px 12px;border-radius:20px;border:2px solid #E6007E;background:#E6007E;color:#fff;font-size:12px;font-weight:700;cursor:pointer;"   onclick="pickRight('none')">없음</button>
+        <button id="rb-tv109"     style="padding:7px 12px;border-radius:20px;border:2px solid #ddd;background:#fff;color:#aaa;font-size:12px;font-weight:700;cursor:pointer;"        onclick="pickRight('tv109')">TV 109채널</button>
+        <button id="rb-tv217"     style="padding:7px 12px;border-radius:20px;border:2px solid #ddd;background:#fff;color:#aaa;font-size:12px;font-weight:700;cursor:pointer;"        onclick="pickRight('tv217')">TV 217채널</button>
+        <button id="rb-tv252"     style="padding:7px 12px;border-radius:20px;border:2px solid #ddd;background:#fff;color:#aaa;font-size:12px;font-weight:700;cursor:pointer;"        onclick="pickRight('tv252')">TV 252채널</button>
+        <button id="rb-netflix"   style="padding:7px 12px;border-radius:20px;border:2px solid #ddd;background:#fff;color:#aaa;font-size:12px;font-weight:700;cursor:pointer;"        onclick="pickRight('netflix')">NETFLIX</button>
+        <button id="rb-disney"    style="padding:7px 12px;border-radius:20px;border:2px solid #ddd;background:#fff;color:#aaa;font-size:12px;font-weight:700;cursor:pointer;"        onclick="pickRight('disney')">Disney+</button>
+        <button id="rb-tving"     style="padding:7px 12px;border-radius:20px;border:2px solid #ddd;background:#fff;color:#aaa;font-size:12px;font-weight:700;cursor:pointer;"        onclick="pickRight('tving')">TVING</button>
+        <button id="rb-hwanseung" style="padding:7px 12px;border-radius:20px;border:2px solid #ddd;background:#fff;color:#aaa;font-size:12px;font-weight:700;cursor:pointer;"        onclick="pickRight('hwanseung')">환승구독</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeAddCardModal()" style="flex:1;padding:12px;background:#f0f0f0;color:#555;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">취소</button>
+      <button onclick="confirmAddCard()" style="flex:1;padding:12px;background:#E6007E;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 편집 툴바 -->
+<div class="edit-toolbar" id="editToolbar">
+  <span id="toolbarLabel">✏️ 관리자 편집 모드</span>
+  <button class="edit-toggle" id="editBtn" onclick="onEditBtnClick()">편집 시작</button>
+  <button class="edit-toggle" id="saveBtn" onclick="saveHTML()" style="background:#1a73e8; display:none;">💾 파일 저장</button>
+</div>
+
+<!-- 헤더 -->
+<div class="top-header">
+  <button class="back-btn" onclick="history.back()">←</button>
+  <div class="top-header-title" onclick="adminTitleTap()" style="cursor:default;">인터넷 / IPTV</div>
+</div>
+
+<!-- 필터 -->
+<div class="filter-wrap">
+  <div class="filter-list">
+    <button class="filter-btn active" onclick="setFilter('all',this)">#전체</button>
+    <button class="filter-btn" onclick="setFilter('internet',this)">#단독</button>
+    <button class="filter-btn" onclick="setFilter('speed100',this)">#100M</button>
+    <button class="filter-btn" onclick="setFilter('speed500',this)">#500M</button>
+    <button class="filter-btn" onclick="setFilter('speed1g',this)">#1G</button>
+  </div>
+</div>
+
+<!-- 카드 리스트 -->
+<div class="plan-list" id="planList"></div>
+
+<!-- 하단 CTA -->
+<div class="bottom-cta">
+  <a class="cta-kakao" href="#">
+    <div class="talk-bubble">💬</div>
+    카톡 문의하기
+  </a>
+  <a class="cta-call" href="tel:010-8000-5748">
+    <span class="uplus-badge">U+</span>
+    전화 문의하기
+  </a>
+</div>
+
+<script>
+var ADMIN_PASSWORD = 'jc316719';
+var SECRET_KEY = 'adminjc';
+var editMode = false;
+var currentFilter = 'all';
+var currentBadgeCardId = null;
+
+var BADGE_DEFS = [
+  { key:'best',  label:'BEST',    cls:'badge-best'  },
+  { key:'new',   label:'NEW',     cls:'badge-new'   },
+  { key:'hot',   label:'인기',    cls:'badge-hot'   },
+  { key:'event', label:'EVENT',   cls:'badge-event' },
+  { key:'alone',  label:'인터넷단독', cls:'badge-alone' },
+];
+
+var cards = [
+  /* 인터넷 단독 */
+  {
+    id:'card-1', category:['all','benefit','internet'],
+    name:'와이파이기본 인터넷 100M',
+    badges:['alone'],
+    iconLeft:{ type:'speed', value:'100M' }, iconRight:null,
+    normalPrice:'월 22,000원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'16,500원', period:'3년 약정 기준', gift:'지원금 최대 20만원',
+    event:false, eventPeriod:'',
+  },
+  {
+    id:'card-2', category:['all','benefit','internet'],
+    name:'와이파이기본 인터넷 500M',
+    badges:['alone'],
+    iconLeft:{ type:'speed', value:'500M' }, iconRight:null,
+    normalPrice:'월 33,000원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'23,100원', period:'3년 약정 기준', gift:'지원금 최대 23만원',
+    event:false, eventPeriod:'',
+  },
+  {
+    id:'card-3', category:['all','benefit','internet'],
+    name:'와이파이기본 인터넷 1G',
+    badges:['alone'],
+    iconLeft:{ type:'speed', value:'1G' }, iconRight:null,
+    normalPrice:'월 38,500원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'25,300원', period:'3년 약정 기준', gift:'지원금 최대 23만원',
+    event:false, eventPeriod:'',
+  },
+  /* ── 실속형 219채널 ── */
+  {
+    id:'card-4', category:['all','benefit'],
+    name:'프리미엄 안심보상 100M + 실속형',
+    badges:['hot'],
+    iconLeft:{ type:'speed', value:'100M' }, iconRight:{ type:'tv', value:'217채널' },
+    normalPrice:'월 45,100원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'39,600원', period:'3년 약정 기준', gift:'지원금 최대 40만원',
+    event:false, eventPeriod:'',
+  },
+  {
+    id:'card-5', category:['all','benefit'],
+    name:'프리미엄 안심보상 500M + 실속형',
+    badges:['hot'],
+    iconLeft:{ type:'speed', value:'500M' }, iconRight:{ type:'tv', value:'217채널' },
+    normalPrice:'월 51,700원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'41,800원', period:'3년 약정 기준', gift:'지원금 최대 50만원',
+    event:false, eventPeriod:'',
+  },
+  {
+    id:'card-6', category:['all','benefit'],
+    name:'프리미엄 안심보상 1G + 실속형',
+    badges:['hot'],
+    iconLeft:{ type:'speed', value:'1G' }, iconRight:{ type:'tv', value:'217채널' },
+    normalPrice:'월 57,200원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'44,000원', period:'3년 약정 기준', gift:'지원금 최대 50만원',
+    event:false, eventPeriod:'',
+  },
+  /* ── 기본형 225채널 ── */
+  {
+    id:'card-7', category:['benefit'],
+    name:'프리미엄 안심보상 100M + 기본형',
+    badges:[],
+    iconLeft:{ type:'speed', value:'100M' }, iconRight:{ type:'tv', value:'223채널' },
+    normalPrice:'월 46,200원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'40,700원', period:'3년 약정 기준', gift:'지원금 최대 40만원',
+    event:false, eventPeriod:'',
+  },
+  {
+    id:'card-8', category:['benefit'],
+    name:'프리미엄 안심보상 500M + 기본형',
+    badges:[],
+    iconLeft:{ type:'speed', value:'500M' }, iconRight:{ type:'tv', value:'223채널' },
+    normalPrice:'월 52,800원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'42,900원', period:'3년 약정 기준', gift:'지원금 최대 50만원',
+    event:false, eventPeriod:'',
+  },
+  {
+    id:'card-9', category:['benefit'],
+    name:'프리미엄 안심보상 1G + 기본형',
+    badges:[],
+    iconLeft:{ type:'speed', value:'1G' }, iconRight:{ type:'tv', value:'223채널' },
+    normalPrice:'월 58,300원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'45,100원', period:'3년 약정 기준', gift:'지원금 최대 50만원',
+    event:false, eventPeriod:'',
+  },
+  /* ── 프리미엄 253채널 ── */
+  {
+    id:'card-11', category:['benefit'],
+    name:'프리미엄 안심보상 100M + 프리미엄',
+    badges:['best'],
+    iconLeft:{ type:'speed', value:'100M' }, iconRight:{ type:'tv', value:'252채널' },
+    normalPrice:'월 48,400원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'42,900원', period:'3년 약정 기준', gift:'지원금 최대 40만원',
+    event:false, eventPeriod:'',
+  },
+  {
+    id:'card-12', category:['benefit'],
+    name:'프리미엄 안심보상 500M + 프리미엄',
+    badges:['best'],
+    iconLeft:{ type:'speed', value:'500M' }, iconRight:{ type:'tv', value:'252채널' },
+    normalPrice:'월 55,500원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'45,100원', period:'3년 약정 기준', gift:'지원금 최대 50만원',
+    event:false, eventPeriod:'',
+  },
+  {
+    id:'card-13', category:['benefit'],
+    name:'프리미엄 안심보상 1G + 프리미엄',
+    badges:['best'],
+    iconLeft:{ type:'speed', value:'1G' }, iconRight:{ type:'tv', value:'252채널' },
+    normalPrice:'월 60,500원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'47,300원', period:'3년 약정 기준', gift:'지원금 최대 50만원',
+    event:false, eventPeriod:'',
+  },
+  /* 디즈니 */
+  {
+    id:'card-14', category:['benefit','ott'],
+    name:'프리미엄 안심보상 100M + 디즈니',
+    badges:[],
+    iconLeft:{ type:'speed', value:'100M' }, iconRight:{ type:'ott', value:'Disney', color:'#113CCF' },
+    normalPrice:'월 56,500원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'51,000원', period:'3년 약정 기준', gift:'지원금 최대 40만원',
+    event:false, eventPeriod:'',
+  },
+  {
+    id:'card-15', category:['benefit','ott'],
+    name:'프리미엄 안심보상 500M + 디즈니',
+    badges:[],
+    iconLeft:{ type:'speed', value:'500M' }, iconRight:{ type:'ott', value:'Disney', color:'#113CCF' },
+    normalPrice:'월 63,100원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'53,200원', period:'3년 약정 기준', gift:'지원금 최대 50만원',
+    event:false, eventPeriod:'',
+  },
+  {
+    id:'card-16', category:['benefit','ott'],
+    name:'프리미엄 안심보상 1G + 디즈니',
+    badges:[],
+    iconLeft:{ type:'speed', value:'1G' }, iconRight:{ type:'ott', value:'Disney', color:'#113CCF' },
+    normalPrice:'월 68,600원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'55,400원', period:'3년 약정 기준', gift:'지원금 최대 50만원',
+    event:false, eventPeriod:'',
+  },
+  /* 환승구독 */
+  {
+    id:'card-10', category:['hwanseung','hidden'],
+    name:'프리미엄 안심 보상 1G + 환승구독',
+    badges:['new'],
+    iconLeft:{ type:'speed', value:'1G' }, iconRight:{ type:'hwanseung' },
+    normalPrice:'월 00,000원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'00,000원', period:'3년 약정 기준',
+    gift:'',
+    event:false, eventPeriod:'',
+  },
+];
+
+/* SVG 라우터 */
+function svgRouter() {
+  return '<svg width="72" height="62" viewBox="0 0 56 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<path d="M28 16 C17 16 9 22 6 29" stroke="#E6007E" stroke-width="2.5" stroke-linecap="round" opacity="0.25"/>' +
+    '<path d="M50 29 C47 22 39 16 28 16" stroke="#E6007E" stroke-width="2.5" stroke-linecap="round" opacity="0.25"/>' +
+    '<path d="M28 16 C20 16 13 21 11 27" stroke="#E6007E" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>' +
+    '<path d="M45 27 C43 21 36 16 28 16" stroke="#E6007E" stroke-width="2.5" stroke-linecap="round" opacity="0.55"/>' +
+    '<path d="M28 16 C23 16 19 19 17 23" stroke="#E6007E" stroke-width="2.8" stroke-linecap="round"/>' +
+    '<path d="M39 23 C37 19 33 16 28 16" stroke="#E6007E" stroke-width="2.8" stroke-linecap="round"/>' +
+    '<circle cx="28" cy="16" r="2.5" fill="#E6007E"/>' +
+    '<rect x="9" y="32" width="38" height="13" rx="4.5" fill="#fce4ef"/>' +
+    '<rect x="9" y="32" width="38" height="13" rx="4.5" stroke="#E6007E" stroke-width="1.8"/>' +
+    '<rect x="13" y="36" width="4" height="5" rx="1.2" fill="#E6007E" opacity="0.3"/>' +
+    '<rect x="19" y="36" width="4" height="5" rx="1.2" fill="#E6007E" opacity="0.3"/>' +
+    '<circle cx="35" cy="38.5" r="1.8" fill="#E6007E" opacity="0.35"/>' +
+    '<circle cx="40" cy="38.5" r="1.8" fill="#E6007E" opacity="0.65"/>' +
+    '<circle cx="45" cy="38.5" r="2" fill="#E6007E"/>' +
+    '</svg>';
+}
+
+/* SVG 환승구독 */
+function svgHwanseung() {
+  return '<svg width="72" height="35" viewBox="0 0 180 88" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<rect x="0" y="0" width="100" height="88" rx="14" fill="#E6007E"/>' +
+    '<text x="50" y="58" text-anchor="middle" font-size="42" font-weight="900" fill="white" font-family="Apple SD Gothic Neo,Noto Sans KR,sans-serif">환승</text>' +
+    '<rect x="108" y="0" width="72" height="88" rx="14" fill="#e0e0e0"/>' +
+    '<text x="144" y="58" text-anchor="middle" font-size="42" font-weight="900" fill="#555" font-family="Apple SD Gothic Neo,Noto Sans KR,sans-serif">구독</text>' +
+    '</svg>';
+}
+
+/* SVG TV */
+function svgTV() {
+  return '<svg width="64" height="54" viewBox="0 0 56 48" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<rect x="5" y="5" width="46" height="31" rx="4" fill="#e0f2fe"/>' +
+    '<rect x="5" y="5" width="46" height="31" rx="4" stroke="#0ea5e9" stroke-width="2"/>' +
+    '<polygon points="22,13 22,27 36,20" fill="#0ea5e9" opacity="0.85"/>' +
+    '<line x1="20" y1="36" x2="17" y2="44" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"/>' +
+    '<line x1="36" y1="36" x2="39" y2="44" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"/>' +
+    '<line x1="14" y1="44" x2="42" y2="44" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round"/>' +
+    '</svg>';
+}
+
+/* 아이콘 유닛 HTML */
+function buildIcon(ic) {
+  if (!ic) return '';
+  if (ic.type === 'speed') {
+    return '<div class="icon-unit">' +
+      '<div class="icon-svg-wrap">' + svgRouter() + '</div>' +
+      '<span class="icon-label-text" style="color:#E6007E;">' + ic.value + '</span>' +
+      '</div>';
+  }
+  if (ic.type === 'tv') {
+    return '<div class="icon-unit">' +
+      '<div class="icon-svg-wrap tv">' + svgTV() + '</div>' +
+      '<span class="icon-label-text tv" style="color:#0ea5e9;">' + ic.value + '</span>' +
+      '</div>';
+  }
+  if (ic.type === 'ott') {
+    var sub = ic.value === 'Disney' ? '<span style="font-size:9px;font-weight:600;color:#113CCF;letter-spacing:0.5px;margin-top:-4px;display:block;">스탠다드</span>' : '';
+    return '<div class="icon-unit-ott">' +
+      '<div class="icon-ott-logo">' +
+        '<span class="chip-ott-text" style="color:' + (ic.color || '#111') + ';">' + ic.value + '</span>' +
+      '</div>' +
+      sub +
+      '</div>';
+  }
+  if (ic.type === 'hwanseung') {
+    return '<div class="icon-unit">' +
+      '<div class="icon-svg-wrap" style="width:72px;height:35px;">' + svgHwanseung() + '</div>' +
+      '<span class="icon-label-text" style="color:#888;font-weight:600;font-size:9px;white-space:normal;text-align:center;line-height:1.4;max-width:72px;">8개 주요 방송사<br>자유이용권을<br>바꿔가며 이용</span>' +
+      '</div>';
+  }
+  return '';
+}
+
+/* 카드 빌드 */
+function buildCard(card) {
+  var div = document.createElement('div');
+  div.className = 'plan-card' + (card.badges.indexOf('event') >= 0 ? ' event-card' : '');
+  div.id = card.id;
+
+  var badgeHtml = '';
+  card.badges.forEach(function(key) {
+    var def = null;
+    for (var i=0; i<BADGE_DEFS.length; i++) { if (BADGE_DEFS[i].key === key) { def = BADGE_DEFS[i]; break; } }
+    if (def) {
+      badgeHtml += '<span class="badge ' + def.cls + '" onclick="if(editMode)openBadgeModal(\'' + card.id + '\')">' + def.label + '</span>';
+      if (key === 'event') {
+        badgeHtml += '<span class="event-period' + (editMode ? ' editable' : '') + '" contenteditable="' + editMode + '" onblur="saveField(\'' + card.id + '\',\'eventPeriod\',this.textContent)">' + (card.eventPeriod || (editMode ? '기간 입력' : '')) + '</span>';
+      }
+    }
+  });
+  var badgeAddBtn = '<button class="badge-add-btn" onclick="openBadgeModal(\'' + card.id + '\')">+ 배지</button>';
+
+  var iconLeft  = buildIcon(card.iconLeft);
+  var iconRight = card.iconRight ? '<span class="icon-combo-plus">+</span>' + buildIcon(card.iconRight) : '';
+
+  div.innerHTML =
+    '<button class="card-delete-btn" onclick="deleteCard(\'' + card.id + '\')" style="display:none">✕</button>' +
+
+    '<div class="badge-row" id="badges-' + card.id + '">' + badgeHtml + badgeAddBtn + '</div>' +
+    '<div class="icon-combo">' + iconLeft + iconRight + '</div>' +
+    '<span class="plan-name-el editable" contenteditable="' + editMode + '" onblur="saveField(\'' + card.id + '\',\'name\',this.textContent)">' + card.name + '</span>' +
+    '<div class="price-block">' +
+      '<div class="price-normal editable" contenteditable="' + editMode + '" onblur="saveField(\'' + card.id + '\',\'normalPrice\',this.textContent)">' + card.normalPrice + '</div>' +
+      '<div class="price-combo-label editable" contenteditable="' + editMode + '" onblur="saveField(\'' + card.id + '\',\'comboLabel\',this.textContent)">' + card.comboLabel + '</div>' +
+      '<div class="price-combo-val">월 <em class="editable" contenteditable="' + editMode + '" onblur="saveField(\'' + card.id + '\',\'comboPrice\',this.textContent)">' + card.comboPrice + '</em></div>' +
+      '<div class="price-period editable" contenteditable="' + editMode + '" onblur="saveField(\'' + card.id + '\',\'period\',this.textContent)">' + card.period + '</div>' +
+      '<div class="price-gift editable" contenteditable="' + editMode + '" onblur="saveField(\'' + card.id + '\',\'gift\',this.textContent)">' + card.gift + '</div>' +
+    '</div>';
+
+  if (editMode) div.querySelector('.card-delete-btn').style.display = 'flex';
+  return div;
+}
+
+/* 렌더 */
+function renderAll() {
+  var list = document.getElementById('planList');
+  list.innerHTML = '';
+  var filtered = cards.filter(function(c) {
+    if (c.category.indexOf('hidden') >= 0) return false;
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'speed100') return c.iconLeft && c.iconLeft.value === '100M';
+    if (currentFilter === 'speed500') return c.iconLeft && c.iconLeft.value === '500M';
+    if (currentFilter === 'speed1g')  return c.iconLeft && c.iconLeft.value === '1G';
+    return c.category.indexOf(currentFilter) >= 0;
+  });
+  // 이벤트 ON 또는 EVENT 배지 카드 맨 앞으로
+  filtered.sort(function(a, b) {
+    var aEvent = a.badges.indexOf('event') >= 0;
+    var bEvent = b.badges.indexOf('event') >= 0;
+    if (aEvent && !bEvent) return -1;
+    if (!aEvent && bEvent) return 1;
+    return 0;
+  });
+  filtered.forEach(function(card) { list.appendChild(buildCard(card)); });
+  if (editMode) {
+    var addBtn = document.createElement('div');
+    addBtn.className = 'add-card-btn';
+    addBtn.textContent = '＋ 상품 추가';
+    addBtn.onclick = addCard;
+    list.appendChild(addBtn);
+  }
+}
+
+/* 필터 */
+function setFilter(val, el) {
+  currentFilter = val;
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  renderAll();
+}
+
+/* 필드 저장 */
+function saveField(cardId, field, val) {
+  for (var i=0; i<cards.length; i++) { if (cards[i].id === cardId) { cards[i][field] = val.trim(); break; } }
+}
+
+/* 카드 추가/삭제 */
+var cardCounter = 20;
+var addCardSpeed = '100M';
+var addCardRight = 'none';
+
+var RIGHT_OPTIONS = {
+  'none':      null,
+  'tv109':     { type:'tv',  value:'109채널' },
+  'tv217':     { type:'tv',  value:'217채널' },
+  'tv252':     { type:'tv',  value:'252채널' },
+  'netflix':   { type:'ott', value:'NETFLIX', color:'#E50914' },
+  'disney':    { type:'ott', value:'Disney', color:'#113CCF' },
+  'tving':     { type:'ott', value:'TVING',   color:'#FF153C' },
+  'hwanseung': { type:'hwanseung' },
+};
+
+function addCard() { openAddCardModal(); }
+
+function openAddCardModal() {
+  addCardSpeed = '100M';
+  addCardRight = 'none';
+  // 버튼 초기화
+  document.getElementById('addCardOverlay').style.display = 'flex';
+  pickSpeed('100M');
+  pickRight('none');
+}
+function closeAddCardModal() { document.getElementById('addCardOverlay').style.display = 'none'; }
+
+var SPEED_IDS = ['sb-100M','sb-500M','sb-1G'];
+var RIGHT_IDS  = ['rb-none','rb-tv109','rb-tv217','rb-tv252','rb-netflix','rb-disney','rb-tving','rb-hwanseung'];
+var BTN_ON  = 'border:2px solid #E6007E;background:#E6007E;color:#fff;';
+var BTN_OFF = 'border:2px solid #ddd;background:#fff;color:#aaa;';
+
+function pickSpeed(val) {
+  addCardSpeed = val;
+  SPEED_IDS.forEach(function(id) {
+    var b = document.getElementById(id);
+    if (!b) return;
+    var base = 'flex:1;padding:9px 0;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;';
+    b.style.cssText = base + (id === 'sb-' + val ? BTN_ON : BTN_OFF);
+  });
+}
+function pickRight(val) {
+  addCardRight = val;
+  RIGHT_IDS.forEach(function(id) {
+    var b = document.getElementById(id);
+    if (!b) return;
+    var base = 'padding:7px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;';
+    b.style.cssText = base + (id === 'rb-' + val ? BTN_ON : BTN_OFF);
+  });
+}
+
+function confirmAddCard() {
+  closeAddCardModal();
+  var id = 'card-' + cardCounter++;
+  var cat = currentFilter === 'all' || currentFilter === 'popular' ? ['all'] : [currentFilter];
+  cards.push({
+    id:id, category:cat, name:'새 상품명', badges:[],
+    iconLeft:  { type:'speed', value:addCardSpeed },
+    iconRight: RIGHT_OPTIONS[addCardRight] || null,
+    normalPrice:'월 00,000원', comboLabel:'U+모바일 결합 기준',
+    comboPrice:'00,000원', period:'3년 약정 기준',
+    gift:'상품권 00만원 증정', event:false, eventPeriod:''
+  });
+  renderAll();
+}
+function deleteCard(cardId) {
+  if (!confirm('이 카드를 삭제할까요?')) return;
+  cards = cards.filter(function(c) { return c.id !== cardId; });
+  renderAll();
+}
+
+/* 배지 모달 */
+function openBadgeModal(cardId) {
+  if (!editMode) return;
+  currentBadgeCardId = cardId;
+  var card = null;
+  for (var i=0; i<cards.length; i++) { if (cards[i].id === cardId) { card = cards[i]; break; } }
+  var opts = document.getElementById('badgeOptions');
+  opts.innerHTML = '';
+  BADGE_DEFS.forEach(function(def) {
+    var isOn = card.badges.indexOf(def.key) >= 0;
+    var d = document.createElement('div');
+    d.className = 'badge-option';
+    d.innerHTML = '<span class="badge-option-label">' + def.label + '</span>' +
+      '<div class="badge-option-toggle ' + (isOn?'on':'') + '" id="btoggle-' + def.key + '" onclick="toggleBadge(\'' + cardId + '\',\'' + def.key + '\')"></div>';
+    opts.appendChild(d);
+  });
+  document.getElementById('badgeModalOverlay').classList.add('show');
+}
+function closeBadgeModal() {
+  document.getElementById('badgeModalOverlay').classList.remove('show');
+  if (currentBadgeCardId) renderAll();
+}
+function toggleBadge(cardId, key) {
+  var card = null;
+  for (var i=0; i<cards.length; i++) { if (cards[i].id === cardId) { card = cards[i]; break; } }
+  var idx = card.badges.indexOf(key);
+  if (idx >= 0) card.badges.splice(idx,1); else card.badges.push(key);
+  var toggle = document.getElementById('btoggle-' + key);
+  if (toggle) toggle.classList.toggle('on', card.badges.indexOf(key) >= 0);
+}
+
+/* 편집모드 */
+function onEditBtnClick() { toggleEdit(!editMode); }
+function toggleEdit(on) {
+  editMode = on;
+  document.body.classList.toggle('edit-mode', on);
+  const saveBtn = document.getElementById('saveBtn'); if(saveBtn) saveBtn.style.display = on ? 'none' : 'inline-block';
+  renderAll();
+  var btn = document.getElementById('editBtn');
+  btn.textContent = on ? '✅ 편집 완료' : '편집 시작';
+  btn.style.background = on ? '#28a745' : '#555';
+  document.getElementById('toolbarLabel').textContent = on ? '✏️ 편집 중' : '✏️ 관리자 편집 모드';
+}
+
+/* 비번 */
+var keyBuffer = '';
+document.addEventListener('keydown', function(e) {
+  keyBuffer += e.key.toLowerCase();
+  if (keyBuffer.length > SECRET_KEY.length) keyBuffer = keyBuffer.slice(-SECRET_KEY.length);
+  if (keyBuffer === 'adminjc') { keyBuffer=''; openPwModal(); }
+});
+function openPwModal() {
+  document.getElementById('pwInput').value='';
+  document.getElementById('pwError').textContent='';
+  document.getElementById('pwInput').classList.remove('error');
+  document.getElementById('pwOverlay').classList.add('show');
+  setTimeout(function(){ document.getElementById('pwInput').focus(); }, 100);
+}
+function closePwModal() { document.getElementById('pwOverlay').classList.remove('show'); }
+function checkPassword() {
+  if (document.getElementById('pwInput').value === ADMIN_PASSWORD) {
+    closePwModal();
+    document.getElementById('editToolbar').classList.add('visible');
+    toggleEdit(true);
+  } else {
+    document.getElementById('pwInput').classList.add('error');
+    document.getElementById('pwError').textContent='비밀번호가 틀렸습니다.';
+    document.getElementById('pwInput').value='';
+  }
+}
+
+/* 초기 렌더 */
+function initPage() {
+  var list = document.getElementById('planList');
+  if (!list) { setTimeout(initPage, 50); return; }
+  try { renderAll(); }
+  catch(e) { 
+    list.innerHTML = '<div style="padding:40px;text-align:center;color:#999;">오류: ' + e.message + '</div>';
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.__savedCards) cards = window.__savedCards;
+  initPage();
+});
+window.addEventListener('load', initPage);
+setTimeout(initPage, 100);
+initPage();
+
+// ── 모바일: 제목 5번 탭으로 관리자 진입 ──
+let adminTapCount = 0, adminTapTimer = null;
+function adminTitleTap() {
+  adminTapCount++;
+  clearTimeout(adminTapTimer);
+  adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 2000);
+  if (adminTapCount >= 5) { adminTapCount = 0; openPwModal(); }
+}
+
+
+// ── HTML 저장 기능 ──
+function saveHTML() {
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelector('body').classList.remove('edit-mode');
+  clone.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'false'));
+  // 편집 툴바 상태 초기화
+  const toolbar = clone.querySelector('#editToolbar');
+  if (toolbar) toolbar.className = 'edit-toolbar';
+  const editBtn = clone.querySelector('#editBtn');
+  if (editBtn) { editBtn.textContent = '편집 시작'; editBtn.style.background = 'rgb(85, 85, 85)'; }
+  const toolbarLabel = clone.querySelector('#toolbarLabel');
+  if (toolbarLabel) toolbarLabel.textContent = '✏️ 관리자 편집 모드';
+  const saveBtn2 = clone.querySelector('#saveBtn');
+  if (saveBtn2) saveBtn2.style.display = 'none';
+  // cards 데이터 저장
+  try {
+    const cardsData = JSON.stringify(cards);
+    const existingScript = clone.querySelector('script[data-cards]');
+    if (existingScript) existingScript.remove();
+    const dataScript = clone.ownerDocument.createElement('script');
+    dataScript.setAttribute('data-cards', '1');
+    dataScript.textContent = 'window.__savedCards = ' + cardsData + ';';
+    clone.querySelector('head').appendChild(dataScript);
+  } catch(e) {}
+  const html = '<!DOCTYPE html>\n' + clone.outerHTML;
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = document.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+</script>
+
+
+</body>
+</html>
