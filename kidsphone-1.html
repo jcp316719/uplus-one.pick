@@ -50,8 +50,12 @@
   .badge-add-btn { display:none; font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; background:#e2e8f0; color:#666; border:none; cursor:pointer; }
   body.edit-mode .badge-add-btn { display:inline-block; }
   /* 재고 소진 */
-  .soldout-toggle-btn { display:none; font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; background:#fff0f0; color:#d32f2f; border:1px solid #d32f2f; cursor:pointer; margin-left:auto; }
-  body.edit-mode .soldout-toggle-btn { display:inline-block; }
+  .storage-option.storage-soldout { opacity:0.5; }
+  .storage-option.storage-soldout .storage-option-name::after { content:' (재고소진)'; color:#d32f2f; font-size:11px; font-weight:700; }
+  .storage-soldout-btn { font-size:11px; font-weight:700; padding:3px 8px; border-radius:8px; cursor:pointer; border:none; margin-left:6px; display:none; }
+  .storage-soldout-btn.is-soldout { background:#fff0f0; color:#d32f2f; border:1px solid #d32f2f; }
+  .storage-soldout-btn.not-soldout { background:#f0fff0; color:#2e7d32; border:1px solid #2e7d32; }
+  body.edit-mode .storage-soldout-btn { display:inline-block; }
   .sold-out-stamp {
     position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-12deg);
     border:4px solid #d32f2f; color:#d32f2f; font-size:26px; font-weight:900;
@@ -335,7 +339,6 @@
       <div class="badge-row" id="badges-card-1">
         <span class="badge badge-new" data-key="new" onclick="if(editMode) openBadgeModal('card-1')">최신</span><span class="badge badge-support" data-key="support" onclick="if(editMode) openBadgeModal('card-1')">지원금확대</span>
         <button class="badge-add-btn" onclick="openBadgeModal('card-1')">+ 배지</button>
-        <button class="soldout-toggle-btn" onclick="toggleSoldOut('card-1')">재고 소진 처리</button>
       </div>
       <div class="phone-info-row">
         <div style="flex:1">
@@ -389,7 +392,6 @@
       <div class="badge-row" id="badges-card-2">
         <span class="badge badge-new" data-key="new" onclick="if(editMode) openBadgeModal('card-2')">최신</span><span class="badge badge-hot" data-key="hot" onclick="if(editMode) openBadgeModal('card-2')">인기</span><span class="badge badge-support" data-key="support" onclick="if(editMode) openBadgeModal('card-2')">지원금확대</span>
         <button class="badge-add-btn" onclick="openBadgeModal('card-2')">+ 배지</button>
-        <button class="soldout-toggle-btn" onclick="toggleSoldOut('card-2')">재고 소진 처리</button>
       </div>
       <div class="phone-info-row">
         <div style="flex:1">
@@ -576,7 +578,8 @@ function renderAll() {
 
 function buildCard(card) {
   const el = document.createElement('div');
-  el.className = 'phone-card' + (card.badges.includes('event') ? ' event-card' : '') + (card.soldOut ? ' sold-out' : '');
+  const storageSoldOut = !card.soldOut && card.storages[card.selectedStorage] && !!card.storages[card.selectedStorage].soldOut;
+  el.className = 'phone-card' + (card.badges.includes('event') ? ' event-card' : '') + ((card.soldOut || storageSoldOut) ? ' sold-out' : '');
   el.id = card.id;
 
   const st = card.storages[card.selectedStorage];
@@ -616,12 +619,11 @@ function buildCard(card) {
 
   el.innerHTML = `
     <button class="card-delete-btn" onclick="deleteCard('${card.id}')">✕</button>
-    ${card.soldOut ? `<div class="sold-out-stamp">재고소진</div>` : ''}
+    ${(card.soldOut || storageSoldOut) ? `<div class="sold-out-stamp">재고소진</div>` : ''}
     <div class="phone-card-top">
       <div class="badge-row" id="badges-${card.id}">
         ${badgeHTML}
         <button class="badge-add-btn" onclick="openBadgeModal('${card.id}')">+ 배지</button>
-        <button class="soldout-toggle-btn" onclick="toggleSoldOut('${card.id}')">${card.soldOut ? '재고 입고 처리' : '재고 소진 처리'}</button>
       </div>
       <div class="phone-info-row">
         <div style="flex:1">
@@ -725,16 +727,23 @@ function openStorageSheet(cardId) {
   const opts = document.getElementById('storageOptions');
   opts.innerHTML = '';
   card.storages.forEach((st, si) => {
+    const isSoldOut = !!st.soldOut;
     const div = document.createElement('div');
-    div.className = `storage-option ${si === card.selectedStorage ? 'selected' : ''}`;
+    div.className = 'storage-option' + (si === card.selectedStorage ? ' selected' : '') + (isSoldOut ? ' storage-soldout' : '');
     div.innerHTML = `
-      <span class="storage-option-name editable-storage" contenteditable="${editMode}"
-        onblur="saveStorageLabel('${cardId}',${si},this.textContent)">${st.label}</span>
-      <span class="storage-option-price editable-installment"
-        contenteditable="${editMode ? 'true' : 'false'}"
-        style="${editMode ? 'cursor:text;text-decoration:underline dotted #888;' : ''}"
-        onblur="saveStorageInstallment('${cardId}',${si},this.textContent)">할부원금 ${st.installment}</span>
-      ${editMode ? `<button onclick="deleteStorage('${cardId}',${si})" style="background:#ff3b3b;color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;">✕</button>` : ''}`;
+      <div style="display:flex;flex-direction:column;flex:1;min-width:0;">
+        <span class="storage-option-name editable-storage" contenteditable="${editMode}"
+          onblur="saveStorageLabel('${cardId}',${si},this.textContent)">${st.label}</span>
+        <span class="storage-option-price editable-installment"
+          contenteditable="${editMode ? 'true' : 'false'}"
+          style="${editMode ? 'cursor:text;text-decoration:underline dotted #888;' : ''}"
+          onblur="saveStorageInstallment('${cardId}',${si},this.textContent)">할부원금 ${st.installment}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <button class="storage-soldout-btn ${isSoldOut ? 'is-soldout' : 'not-soldout'}"
+          onclick="toggleStorageSoldOut(event,'${cardId}',${si})">${isSoldOut ? '재고소진' : '재고있음'}</button>
+        ${editMode ? `<button onclick="deleteStorage('${cardId}',${si})" style="background:#ff3b3b;color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;">✕</button>` : ''}
+      </div>`;
     div.onclick = (e) => {
       if (e.target.tagName === 'BUTTON' || e.target.contentEditable === 'true') return;
       card.selectedStorage = si;
@@ -818,8 +827,22 @@ function replacePhoneImg(input, cardId, colorIdx, storageIdx) {
   const card = cards.find(c => c.id === cardId);
   const reader = new FileReader();
   reader.onload = (e) => {
-    card.colors[colorIdx].image = e.target.result;
-    reRenderCard(card);
+    const original = new Image();
+    original.onload = () => {
+      const MAX = 800;
+      let w = original.width, h = original.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(original, 0, 0, w, h);
+      const compressed = canvas.toDataURL('image/jpeg', 0.82);
+      card.colors[colorIdx].image = compressed;
+      reRenderCard(card);
+    };
+    original.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -981,6 +1004,15 @@ function toggleSoldOut(cardId) {
   const card = cards.find(c => c.id === cardId);
   if (!card) return;
   card.soldOut = !card.soldOut;
+  reRenderCard(card);
+}
+
+function toggleStorageSoldOut(e, cardId, si) {
+  e.stopPropagation();
+  const card = cards.find(c => c.id === cardId);
+  if (!card || !card.storages[si]) return;
+  card.storages[si].soldOut = !card.storages[si].soldOut;
+  openStorageSheet(cardId);
   reRenderCard(card);
 }
 
