@@ -375,7 +375,7 @@
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1', 0, 'subsidy')" onblur="savePriceField('card-1', 0, 'subsidy', this.textContent)">-214,000원</span>
       </div>
       <div class="price-row-item">
-        <span class="price-row-label">U+one <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
+        <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1', 0, 'oneDiscount')" onblur="savePriceField('card-1', 0, 'oneDiscount', this.textContent)">-155,500원</span>
       </div>
       <hr class="divider">
@@ -428,7 +428,7 @@
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-2', 0, 'subsidy')" onblur="savePriceField('card-2', 0, 'subsidy', this.textContent)">-240,000원</span>
       </div>
       <div class="price-row-item">
-        <span class="price-row-label">U+one <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
+        <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-2', 0, 'oneDiscount')" onblur="savePriceField('card-2', 0, 'oneDiscount', this.textContent)">-156,000원</span>
       </div>
       <hr class="divider">
@@ -660,7 +660,7 @@ function buildCard(card) {
           onblur="savePriceField('${card.id}', ${card.selectedStorage}, 'subsidy', this.textContent)">${st.subsidy}</span>
       </div>
       <div class="price-row-item">
-        <span class="price-row-label">U+one <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
+        <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="${editMode}"
           onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, '${card.id}', ${card.selectedStorage}, 'oneDiscount')"
           onblur="savePriceField('${card.id}', ${card.selectedStorage}, 'oneDiscount', this.textContent)">${st.oneDiscount}</span>
