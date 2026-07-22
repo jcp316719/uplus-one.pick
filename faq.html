@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>자주 묻는 질문 - U+ Pick</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    color:#222;
+    background:#fff;
+  }
+  a { color:inherit; text-decoration:none; }
+
+  /* ── 상단 고정 영역 (툴바 + 헤더를 하나의 sticky 컨테이너로 묶어 겹침 방지) ── */
+  .sticky-head { position:sticky; top:0; z-index:200; }
+
+  /* ── 관리자 편집 툴바 ── */
+  .edit-toolbar {
+    background:#222; color:#fff; padding:10px 16px;
+    display:none; align-items:center; justify-content:space-between;
+    font-size:12px;
+  }
+  .edit-toolbar.visible { display:flex; }
+  .edit-toolbar span { opacity:.8; }
+  .edit-toggle {
+    background:#28a745; color:#fff; border:none; border-radius:6px;
+    padding:6px 14px; font-size:12px; font-weight:700; cursor:pointer;
+  }
+
+  /* ── 비밀번호 모달 ── */
+  .pw-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.6);
+    z-index:999; align-items:center; justify-content:center;
+  }
+  .pw-overlay.show { display:flex; }
+  .pw-modal {
+    background:#fff; border-radius:16px; padding:32px 28px; width:300px;
+    text-align:center; box-shadow:0 8px 40px rgba(0,0,0,.25);
+  }
+  .pw-modal h3 { font-size:17px; font-weight:800; color:#111; margin-bottom:6px; }
+  .pw-modal p { font-size:12px; color:#888; margin-bottom:20px; }
+  .pw-input {
+    width:100%; border:2px solid #ddd; border-radius:10px; padding:12px 14px;
+    font-size:16px; text-align:center; letter-spacing:4px; outline:none;
+    margin-bottom:8px; transition:border .2s;
+  }
+  .pw-input:focus { border-color:#E6007E; }
+  .pw-input.error { border-color:#ff3b3b; animation:shake .3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+  .pw-error { font-size:12px; color:#ff3b3b; margin-bottom:14px; min-height:16px; }
+  .pw-btn-row { display:flex; gap:8px; }
+  .pw-confirm, .pw-cancel {
+    flex:1; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:700; cursor:pointer;
+  }
+  .pw-confirm { background:#E6007E; color:#fff; }
+  .pw-cancel { background:#eee; color:#555; }
+
+  /* ── 상단 헤더 (뒤로가기) ── */
+  .top-header {
+    background:#fff; padding:16px 24px; display:flex; align-items:center; gap:12px;
+    border-bottom:1px solid #eee;
+  }
+  .back-btn { background:none; border:none; cursor:pointer; font-size:22px; color:#111; padding:0; line-height:1; }
+  .top-header-title { font-size:17px; font-weight:800; color:#111; }
+
+  /* ── 본문 래퍼 ── */
+  .faq-wrap { max-width:900px; margin:0 auto; padding:24px 20px 80px; }
+
+  .page-title-row { display:flex; align-items:baseline; gap:10px; margin-bottom:22px; }
+  .page-title { font-size:30px; font-weight:900; color:#111; }
+  .page-title-badge { font-size:14px; font-weight:700; color:#aaa; }
+
+  .faq-tabs { display:flex; gap:28px; border-bottom:2px solid #eee; margin-bottom:18px; }
+  .faq-tab {
+    padding:10px 2px 14px; font-size:15px; font-weight:700; color:#999;
+    cursor:pointer; position:relative; user-select:none; background:none; border:none;
+  }
+  .faq-tab.active { color:#111; }
+  .faq-tab.active::after {
+    content:''; position:absolute; left:0; right:0; bottom:-2px; height:2px; background:#111;
+  }
+
+  .faq-toolrow { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  .faq-total { font-size:14px; font-weight:700; color:#333; }
+  .faq-total b { color:#E6007E; }
+
+  .faq-search { display:flex; gap:6px; }
+  .faq-search select {
+    border:1px solid #ddd; border-radius:6px; padding:9px 10px; font-size:13px; color:#333; background:#fff;
+  }
+  .faq-search input {
+    border:1px solid #ddd; border-radius:6px; padding:9px 12px; font-size:13px; width:220px; outline:none;
+  }
+  .faq-search input:focus { border-color:#E6007E; }
+  .faq-search button {
+    background:#222; color:#fff; border:none; border-radius:6px; padding:9px 18px;
+    font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; flex:0 0 auto;
+  }
+  .faq-search button:hover { background:#E6007E; }
+
+  .faq-divider { border-top:2px solid #222; margin-bottom:4px; }
+
+  .faq-list { }
+  .faq-item {
+    border-bottom:1px solid #eee;
+  }
+  .faq-item-head {
+    display:flex; align-items:center; gap:12px; padding:16px 4px; cursor:pointer;
+  }
+  .faq-q-badge {
+    flex:0 0 26px; height:26px; border-radius:6px; background:#222; color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800;
+  }
+  .faq-q-text {
+    flex:1; font-size:14.5px; font-weight:600; color:#222;
+  }
+  .faq-chevron { font-size:13px; color:#999; transition:transform .2s; flex:0 0 auto; cursor:pointer; padding:8px; margin:-8px; }
+  .faq-item.open .faq-chevron { transform:rotate(180deg); }
+  .faq-item-body {
+    max-height:0; overflow:hidden; transition:max-height .25s ease;
+    background:#fafafa; border-radius:8px;
+  }
+  .faq-item.open .faq-item-body { max-height:4000px; }
+
+  .faq-blocks { padding:16px 18px 4px 46px; }
+  .faq-block { position:relative; margin-bottom:14px; }
+  .faq-block:last-child { margin-bottom:6px; }
+  .faq-block-text {
+    font-size:13.5px; line-height:1.65; color:#555; white-space:pre-wrap; padding-right:4px;
+  }
+  .faq-block-img {
+    display:block; width:100%; max-width:520px; border-radius:10px;
+  }
+  .faq-block-del { display:none; }
+  body.edit-mode .faq-block-del {
+    display:flex; align-items:center; justify-content:center;
+    position:absolute; top:-6px; right:-6px; width:22px; height:22px; border-radius:50%;
+    background:rgba(0,0,0,.6); color:#fff; border:none; font-size:11px; font-weight:900; cursor:pointer;
+  }
+  body.edit-mode .faq-block-del:hover { background:#E6007E; }
+
+  .faq-block-toolbar { display:none; padding:0 18px 16px 46px; gap:8px; }
+  body.edit-mode .faq-block-toolbar { display:flex; }
+  .faq-block-toolbar button {
+    background:#fff; border:1px solid #ddd; border-radius:20px; padding:6px 14px;
+    font-size:12px; font-weight:700; color:#555; cursor:pointer;
+  }
+  .faq-block-toolbar button:hover { border-color:#E6007E; color:#E6007E; background:#fff5fa; }
+  .faq-cat-tag {
+    display:inline-block; font-size:10.5px; font-weight:700; color:#E6007E;
+    background:#fff0f7; border-radius:4px; padding:2px 6px; margin-right:8px;
+  }
+
+  .faq-empty { padding:60px 0; text-align:center; color:#999; font-size:14px; }
+
+  .faq-pagination { display:flex; justify-content:center; align-items:center; gap:8px; margin-top:30px; }
+  .faq-page-btn {
+    width:32px; height:32px; border-radius:6px; border:1px solid #ddd; background:#fff;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px; color:#555;
+  }
+  .faq-page-btn.active { background:#222; color:#fff; border-color:#222; font-weight:700; }
+  .faq-page-btn:disabled { opacity:.4; cursor:default; }
+
+  /* ── 편집 모드 ── */
+  body.edit-mode .faq-q-text,
+  body.edit-mode .faq-block-text {
+    border-bottom:1px dashed #E6007E; cursor:text; outline:none; border-radius:2px;
+  }
+  body.edit-mode .faq-q-text:focus,
+  body.edit-mode .faq-block-text:focus { background:#fff5fa; }
+
+  .faq-cat-select { display:none; margin:0 46px 14px; }
+  body.edit-mode .faq-cat-select { display:flex; align-items:center; gap:6px; font-size:12px; color:#666; }
+  body.edit-mode .faq-cat-select select { font-size:12px; padding:4px 6px; border-radius:4px; border:1px solid #ddd; }
+
+  .faq-del-btn { display:none; }
+  body.edit-mode .faq-del-btn {
+    display:flex; align-items:center; justify-content:center;
+    width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,.55); color:#fff;
+    border:none; font-size:12px; font-weight:900; cursor:pointer; flex:0 0 auto;
+  }
+  body.edit-mode .faq-del-btn:hover { background:#E6007E; }
+
+  .faq-add-tile {
+    display:none;
+  }
+  body.edit-mode .faq-add-tile {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    border:2px dashed #ccc; border-radius:10px; padding:16px; margin-top:16px;
+    color:#999; font-weight:700; font-size:13px; cursor:pointer; background:#fafafa;
+  }
+  body.edit-mode .faq-add-tile:hover { border-color:#E6007E; color:#E6007E; background:#fff5fa; }
+
+  @media (max-width:600px) {
+    .page-title { font-size:24px; }
+    .faq-tabs { gap:18px; overflow-x:auto; }
+    .faq-tab { font-size:13.5px; white-space:nowrap; }
+    .faq-toolrow { flex-direction:column; align-items:flex-start; }
+    .faq-search { width:100%; }
+    .faq-search select { flex:0 0 auto; }
+    .faq-search input { flex:1 1 auto; width:auto; min-width:0; }
+    .faq-q-text { font-size:13.5px; }
+    .faq-blocks { padding-left:38px; }
+    .faq-block-toolbar { padding-left:38px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 비밀번호 모달 -->
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-modal">
+    <h3>🔐 관리자 인증</h3>
+    <p>편집 모드 진입을 위해<br>관리자 비밀번호를 입력하세요</p>
+    <input class="pw-input" id="pwInput" type="password" placeholder="비밀번호" onkeydown="if(event.key==='Enter') checkPassword()" oninput="document.getElementById('pwInput').classList.remove('error'); document.getElementById('pwError').textContent=''">
+    <div class="pw-error" id="pwError"></div>
+    <div class="pw-btn-row">
+      <button class="pw-cancel" onclick="closePwModal()">취소</button>
+      <button class="pw-confirm" onclick="checkPassword()">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="sticky-head">
+  <div class="edit-toolbar" id="editToolbar">
+    <span id="toolbarLabel">✏️ 관리자 편집 모드</span>
+    <button class="edit-toggle" id="editBtn" onclick="onEditBtnClick()" style="background: rgb(85, 85, 85);">편집 시작</button>
+    <button class="edit-toggle" id="saveBtn" onclick="saveHTML()" style="background: rgb(26, 115, 232); display: none;">💾 파일 저장</button>
+  </div>
+
+  <div class="top-header">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div class="top-header-title" onclick="logoTap()" style="cursor:default;">자주 묻는 질문</div>
+  </div>
+</div>
+
+<div class="faq-wrap">
+
+  <div class="page-title-row">
+    <div class="page-title">자주 묻는 질문</div>
+    <div class="page-title-badge">FAQ</div>
+  </div>
+
+  <div class="faq-tabs" id="faqTabs">
+    <button class="faq-tab active" data-cat="전체" onclick="setTab('전체')">전체</button>
+    <button class="faq-tab" data-cat="신청/개통문의" onclick="setTab('신청/개통문의')">신청/개통문의</button>
+    <button class="faq-tab" data-cat="배송문의" onclick="setTab('배송문의')">배송문의</button>
+    <button class="faq-tab" data-cat="취소/반품문의" onclick="setTab('취소/반품문의')">취소/반품문의</button>
+  </div>
+
+  <div class="faq-toolrow">
+    <div class="faq-total">Total <b id="faqTotal">0</b></div>
+    <div class="faq-search">
+      <select id="searchCat">
+        <option value="전체">전체</option>
+        <option value="신청/개통문의">신청/개통문의</option>
+        <option value="배송문의">배송문의</option>
+        <option value="취소/반품문의">취소/반품문의</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="검색어를 입력해주세요" onkeydown="if(event.key==='Enter') doSearch()">
+      <button onclick="doSearch()">검색</button>
+    </div>
+  </div>
+
+  <div class="faq-divider"></div>
+
+  <div class="faq-list" id="faqList"></div>
+  <div class="faq-add-tile" onclick="addFaqItem()">+ FAQ 항목 추가</div>
+
+  <div class="faq-pagination" id="faqPagination"></div>
+
+</div>
+
+<script>
+  /* ── FAQ 데이터 (answer는 블록 배열: text/image를 자유롭게 섞어 블로그 글처럼 구성) ── */
+  let faqData = [
+    { cat:'신청/개통문의', q:'온라인 가입 신청서 작성 방법 안내', blocks:[{type:'text', content:'홈페이지 상단의 원하시는 상품을 선택하신 후, 안내되는 신청서 양식에 이름/연락처/배송지 등 필수 정보를 입력하시면 상담원이 순차적으로 연락드려 개통을 도와드립니다.'}] },
+    { cat:'신청/개통문의', q:'가입제한 해제방법', blocks:[{type:'text', content:'통신 3사 명의도용 방지 서비스(엠세이퍼)에서 본인 명의의 가입제한 여부를 확인하실 수 있으며, 제한 설정 시 각 통신사 고객센터 또는 엠세이퍼 홈페이지에서 해제 신청이 가능합니다.'}] },
+    { cat:'신청/개통문의', q:'중복가입 확인 해제 방법 안내', blocks:[{type:'text', content:'동일 명의로 다수 회선이 개통되어 있는 경우 중복가입 확인 서비스에서 제한이 걸릴 수 있습니다. 고객센터로 문의 주시면 확인 후 해제 절차를 안내해드립니다.'}] },
+    { cat:'신청/개통문의', q:'기기변경을 하려는데 휴대폰이 파손돼서 인증번호를 받을 수 없습니다.', blocks:[{type:'text', content:'기존 단말이 파손되어 인증번호 수신이 어려운 경우, 상담원과의 유선 통화 본인확인 또는 신분증 진위확인 절차로 대체 진행이 가능합니다. 실시간 상담을 통해 안내해드립니다.'}] },
+    { cat:'신청/개통문의', q:'신규가입/번호이동 희망자입니다. 신용카드 본인인증 ARS 전화가 정상 수신되지 않아요.', blocks:[{type:'text', content:'ARS 수신이 원활하지 않을 경우 계좌 인증 또는 신분증 인증 등 대체 본인확인 수단으로 진행하실 수 있습니다. 상담원에게 말씀해주시면 바로 안내해드립니다.'}] },
+    { cat:'신청/개통문의', q:'부모님(가족) 혹은 지인 대신 신청하려고 합니다. 어떻게 해야 하나요?', blocks:[{type:'text', content:'대리 신청 시 명의자 본인의 신분증 사본과 위임장, 대리인 신분증이 필요합니다. 자세한 서류 양식은 상담원이 카카오톡으로 발송해드립니다.'}] },
+    { cat:'신청/개통문의', q:'휴대폰 개통은 어떻게 이루어지나요?', blocks:[{type:'text', content:'신청서 작성 → 상담원 확인 전화 → 서류 접수 → 개통 진행 → 배송의 순서로 진행되며, 통상 접수 후 1~2일 이내 개통이 완료됩니다.'}] },
+    { cat:'배송문의', q:'휴대폰 데이터 옮기는 방법', blocks:[{type:'text', content:'스마트 스위치(삼성) 또는 퀵스타트(애플) 등 제조사 제공 앱을 이용하시면 기존 단말의 데이터를 새 단말로 간편하게 옮기실 수 있습니다. 개통 시 상담원이 방법을 함께 안내해드립니다.'}] },
+    { cat:'배송문의', q:'배송 안내 및 유의사항', blocks:[{type:'text', content:'개통 완료 후 1~2일 이내로 안전하게 배송해드리며, 배송 당일 문자 및 카카오톡으로 송장번호를 안내해드립니다. 부재 시 안전한 장소에 보관 후 별도 연락드립니다.'}] },
+    { cat:'배송문의', q:'당일 수령(직접 수령)이 가능한가요?', blocks:[{type:'text', content:'매장 방문 수령을 원하실 경우 상담원에게 미리 말씀해주시면 재고 확인 후 당일 수령이 가능하도록 안내해드립니다.'}] },
+    { cat:'취소/반품문의', q:'단순 변심으로 취소/반품이 가능한가요?', blocks:[{type:'text', content:'개통 전에는 언제든 취소가 가능하며, 개통 후에는 통신관계법령에 따라 사용일수 및 개봉 여부에 따라 반품 가능 여부가 달라질 수 있습니다. 상담원에게 문의해주세요.'}] },
+    { cat:'취소/반품문의', q:'반품 시 위약금이나 수수료가 발생하나요?', blocks:[{type:'text', content:'단순 변심 반품의 경우 통신사 정책에 따라 위약금 또는 사은품 회수 등이 발생할 수 있습니다. 정확한 금액은 개별 상담을 통해 안내해드립니다.'}] }
+  ];
+
+  // 구버전 데이터(a 문자열)를 blocks 배열로 자동 변환 (하위 호환)
+  faqData.forEach(item => {
+    if (!item.blocks) {
+      item.blocks = [{ type:'text', content: item.a || '' }];
+      delete item.a;
+    }
+  });
+
+  let currentTab = '전체';
+  let currentKeyword = '';
+  let currentPage = 1;
+  const PAGE_SIZE = 10;
+  let editMode = false;
+
+  function blocksText(item) {
+    return (item.blocks || []).filter(b => b.type === 'text').map(b => b.content).join(' ');
+  }
+
+  function getFiltered() {
+    return faqData.filter((item, idx) => {
+      const catOk = currentTab === '전체' || item.cat === currentTab;
+      const kwOk = !currentKeyword || item.q.includes(currentKeyword) || blocksText(item).includes(currentKeyword);
+      return catOk && kwOk;
+    }).map((item, i) => ({...item, _idx: faqData.indexOf(item)}));
+  }
+
+  function setTab(cat) {
+    currentTab = cat;
+    currentPage = 1;
+    document.getElementById('searchCat').value = cat;
+    document.querySelectorAll('.faq-tab').forEach(t => t.classList.toggle('active', t.dataset.cat === cat));
+    render();
+  }
+
+  function doSearch() {
+    currentKeyword = document.getElementById('searchInput').value.trim();
+    currentTab = document.getElementById('searchCat').value;
+    currentPage = 1;
+    document.querySelectorAll('.faq-tab').forEach(t => t.classList.toggle('active', t.dataset.cat === currentTab));
+    render();
+  }
+
+  function toggleItem(idx) {
+    const el = document.querySelector(`.faq-item[data-idx="${idx}"]`);
+    if (!el) return;
+    el.classList.toggle('open');
+  }
+
+  function render() {
+    const filtered = getFiltered();
+    document.getElementById('faqTotal').textContent = filtered.length;
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+    const listEl = document.getElementById('faqList');
+    listEl.innerHTML = '';
+
+    if (!pageItems.length) {
+      listEl.innerHTML = '<div class="faq-empty">검색 결과가 없습니다.</div>';
+    }
+
+    pageItems.forEach(item => {
+      const idx = item._idx;
+      const wrap = document.createElement('div');
+      wrap.className = 'faq-item';
+      wrap.dataset.idx = idx;
+      wrap.innerHTML = `
+        <div class="faq-item-head" onclick="if(!editMode) toggleItem(${idx})">
+          <div class="faq-q-badge">Q</div>
+          <div class="faq-q-text editable" contenteditable="false" oninput="faqData[${idx}].q = this.textContent">${escapeHtml(item.q)}</div>
+          <button type="button" class="faq-del-btn" onclick="event.stopPropagation(); deleteFaqItem(${idx})">✕</button>
+          <div class="faq-chevron" onclick="event.stopPropagation(); toggleItem(${idx})">⌄</div>
+        </div>
+        <div class="faq-cat-select">
+          <span class="faq-cat-tag">${item.cat}</span>
+          카테고리:
+          <select onchange="faqData[${idx}].cat = this.value; render();">
+            <option value="신청/개통문의" ${item.cat==='신청/개통문의'?'selected':''}>신청/개통문의</option>
+            <option value="배송문의" ${item.cat==='배송문의'?'selected':''}>배송문의</option>
+            <option value="취소/반품문의" ${item.cat==='취소/반품문의'?'selected':''}>취소/반품문의</option>
+          </select>
+        </div>
+        <div class="faq-item-body">
+          <div class="faq-blocks">${renderBlocks(item, idx)}</div>
+          <div class="faq-block-toolbar">
+            <button type="button" onclick="event.stopPropagation(); addTextBlock(${idx})">📝 텍스트 추가</button>
+            <button type="button" onclick="event.stopPropagation(); triggerAddImage(${idx})">🖼️ 이미지 추가</button>
+            <input type="file" id="faqImgInput-${idx}" accept="image/*" style="display:none" onchange="handleAddImage(${idx}, this)">
+          </div>
+        </div>
+      `;
+      listEl.appendChild(wrap);
+    });
+
+    // 편집모드 상태 재적용
+    document.querySelectorAll('.faq-q-text, .faq-block-text').forEach(el => {
+      el.contentEditable = editMode ? 'true' : 'false';
+    });
+
+    renderPagination(totalPages);
+  }
+
+  function renderBlocks(item, idx) {
+    return (item.blocks || []).map((block, bi) => {
+      if (block.type === 'image') {
+        return `
+          <div class="faq-block" data-type="image">
+            <img class="faq-block-img" src="${block.src}">
+            <button type="button" class="faq-block-del" onclick="event.stopPropagation(); deleteBlock(${idx},${bi})">✕</button>
+          </div>`;
+      }
+      return `
+        <div class="faq-block" data-type="text">
+          <div class="faq-block-text editable" contenteditable="false" oninput="updateBlockText(${idx},${bi},this)">${escapeHtml(block.content)}</div>
+          <button type="button" class="faq-block-del" onclick="event.stopPropagation(); deleteBlock(${idx},${bi})">✕</button>
+        </div>`;
+    }).join('');
+  }
+
+  function updateBlockText(idx, bi, el) {
+    faqData[idx].blocks[bi].content = el.textContent;
+  }
+
+  function addTextBlock(idx) {
+    if (!editMode) return;
+    faqData[idx].blocks.push({ type:'text', content:'새 내용을 입력하세요' });
+    render();
+    reopenItem(idx);
+  }
+
+  function triggerAddImage(idx) {
+    if (!editMode) return;
+    document.getElementById('faqImgInput-' + idx).click();
+  }
+
+  function handleAddImage(idx, input) {
+    const file = input.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const original = new Image();
+      original.onload = () => {
+        const MAX = 900;
+        let w = original.width, h = original.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(original, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', 0.85);
+        faqData[idx].blocks.push({ type:'image', src: compressed });
+        render();
+        reopenItem(idx);
+      };
+      original.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function deleteBlock(idx, bi) {
+    if (!editMode) return;
+    const blocks = faqData[idx].blocks;
+    if (blocks.length <= 1) { alert('최소 1개의 내용 블록은 남아있어야 합니다.'); return; }
+    if (!confirm('이 블록을 삭제할까요?')) return;
+    blocks.splice(bi, 1);
+    render();
+    reopenItem(idx);
+  }
+
+  function reopenItem(idx) {
+    const el = document.querySelector(`.faq-item[data-idx="${idx}"]`);
+    if (el) el.classList.add('open');
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderPagination(totalPages) {
+    const wrap = document.getElementById('faqPagination');
+    wrap.innerHTML = '';
+
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'faq-page-btn';
+    prevBtn.textContent = '‹';
+    prevBtn.disabled = currentPage <= 1;
+    prevBtn.onclick = () => { currentPage--; render(); };
+    wrap.appendChild(prevBtn);
+
+    for (let p = 1; p <= totalPages; p++) {
+      const b = document.createElement('button');
+      b.className = 'faq-page-btn' + (p === currentPage ? ' active' : '');
+      b.textContent = p;
+      b.onclick = () => { currentPage = p; render(); };
+      wrap.appendChild(b);
+    }
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'faq-page-btn';
+    nextBtn.textContent = '›';
+    nextBtn.disabled = currentPage >= totalPages;
+    nextBtn.onclick = () => { currentPage++; render(); };
+    wrap.appendChild(nextBtn);
+  }
+
+  function addFaqItem() {
+    if (!editMode) return;
+    faqData.push({ cat:'신청/개통문의', q:'새 질문을 입력하세요', blocks:[{type:'text', content:'답변을 입력하세요'}] });
+    currentTab = '전체';
+    document.querySelectorAll('.faq-tab').forEach(t => t.classList.toggle('active', t.dataset.cat === '전체'));
+    currentPage = Math.ceil(faqData.length / PAGE_SIZE);
+    render();
+  }
+
+  function deleteFaqItem(idx) {
+    if (!editMode) return;
+    if (!confirm('이 FAQ 항목을 삭제할까요?')) return;
+    faqData.splice(idx, 1);
+    render();
+  }
+
+  render();
+
+  /* ── 관리자 편집 모드 (index.html과 동일한 방식) ── */
+  const ADMIN_PASSWORD = 'jc316719';
+  let adminLogged = false;
+  let keyBuffer = '';
+  const SECRET_KEY = 'adminjc';
+
+  document.addEventListener('keydown', (e) => {
+    keyBuffer += e.key.toLowerCase();
+    if (keyBuffer.length > SECRET_KEY.length) keyBuffer = keyBuffer.slice(-SECRET_KEY.length);
+    if (keyBuffer === SECRET_KEY) { keyBuffer = ''; openPwModal(); }
+  });
+
+  let tapCount = 0, tapTimer = null;
+  function logoTap() {
+    tapCount++;
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => { tapCount = 0; }, 1500);
+    if (tapCount >= 5) { tapCount = 0; openPwModal(); }
+  }
+
+  function openPwModal() {
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwError').textContent = '';
+    document.getElementById('pwInput').classList.remove('error');
+    document.getElementById('pwOverlay').classList.add('show');
+    setTimeout(() => document.getElementById('pwInput').focus(), 100);
+  }
+  function closePwModal() { document.getElementById('pwOverlay').classList.remove('show'); }
+
+  function checkPassword() {
+    const val = document.getElementById('pwInput').value;
+    if (val === ADMIN_PASSWORD) {
+      closePwModal();
+      adminLogged = true;
+      document.getElementById('editToolbar').classList.add('visible');
+      toggleEdit(true);
+    } else {
+      const input = document.getElementById('pwInput');
+      const err = document.getElementById('pwError');
+      input.classList.add('error');
+      err.textContent = '비밀번호가 틀렸습니다.';
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  function onEditBtnClick() { toggleEdit(!editMode); }
+
+  function toggleEdit(on) {
+    editMode = on;
+    document.body.classList.toggle('edit-mode', editMode);
+    document.querySelectorAll('.faq-q-text, .faq-block-text').forEach(el => { el.contentEditable = on ? 'true' : 'false'; });
+    const btn = document.getElementById('editBtn');
+    const label = document.getElementById('toolbarLabel');
+    const saveBtn = document.getElementById('saveBtn');
+    if (editMode) {
+      btn.textContent = '✅ 편집 완료';
+      btn.style.background = '#28a745';
+      label.textContent = '✏️ 편집 중 — 텍스트 클릭 수정 / 답변 펼친 후 텍스트·이미지 블록 추가';
+      if (saveBtn) saveBtn.style.display = 'none';
+    } else {
+      btn.textContent = '편집 시작';
+      btn.style.background = '#555';
+      if (saveBtn) saveBtn.style.display = 'inline-block';
+      label.textContent = '✏️ 관리자 편집 모드';
+    }
+  }
+
+  function saveHTML() {
+    const clone = document.documentElement.cloneNode(true);
+    clone.querySelector('body').classList.remove('edit-mode');
+    clone.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'false'));
+    const toolbar = clone.querySelector('#editToolbar');
+    if (toolbar) toolbar.className = 'edit-toolbar';
+    const editBtn = clone.querySelector('#editBtn');
+    if (editBtn) { editBtn.textContent = '편집 시작'; editBtn.style.background = 'rgb(85, 85, 85)'; }
+    const toolbarLabel = clone.querySelector('#toolbarLabel');
+    if (toolbarLabel) toolbarLabel.textContent = '✏️ 관리자 편집 모드';
+    const saveBtn = clone.querySelector('#saveBtn');
+    if (saveBtn) saveBtn.style.display = 'none';
+    // 최신 faqData를 저장된 스냅샷에 반영
+    try {
+      const existingScript = clone.querySelector('script[data-faq]');
+      if (existingScript) existingScript.remove();
+      const dataScript = clone.ownerDocument.createElement('script');
+      dataScript.setAttribute('data-faq', '1');
+      dataScript.textContent = 'window.__savedFaqData = ' + JSON.stringify(faqData) + ';';
+      clone.querySelector('head').appendChild(dataScript);
+    } catch(e) {}
+    const html = '<!DOCTYPE html>\n' + clone.outerHTML;
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'faq.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // 저장된 데이터가 있으면 복원
+  if (window.__savedFaqData) {
+    faqData = window.__savedFaqData;
+    render();
+  }
+</script>
+
+</body>
+</html>
