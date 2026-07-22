@@ -1696,7 +1696,7 @@
         <div class="faq-col-title">자주 묻는 질문</div>
         <a href="faq.html" class="faq-more">더보기 ›</a>
       </div>
-      <div class="faq-list">
+      <div class="faq-list" id="faqPreviewList">
         <div class="faq-item">
           <div class="faq-q editable" contenteditable="false">Q. 온라인 가입 신청서 작성 방법 안내</div>
           <div class="faq-a editable" contenteditable="false">홈페이지 상단의 원하시는 상품을 선택하신 후, 안내되는 신청서 양식에 이름/연락처/배송지 등 필수 정보를 입력하시면 상담원이 순차적으로 연락드려 개통을 도와드립니다.</div>
@@ -2425,6 +2425,47 @@ function saveHTML() {
 })();
 </script>
 
+<script>
+/* ── 메인페이지 자주 묻는 질문: faq.html 최신 내용과 자동 연동 ──
+   faq.html에서 관리자가 저장한 최신 FAQ 데이터를 불러와 상위 4개를 미리보기로 표시.
+   ※ 같은 폴더에 두고 실제 웹 서버(https)에 올려서 열람할 때 정상 동작합니다.
+     (내 컴퓨터에서 파일을 더블클릭해 file://로 여는 경우 브라우저 보안 정책상
+     연동이 되지 않고, 기존에 저장된 미리보기 내용이 그대로 표시됩니다.) */
+(function syncFaqPreview() {
+  var listEl = document.getElementById('faqPreviewList');
+  if (!listEl) return;
+
+  fetch('faq.html')
+    .then(function(res) { return res.text(); })
+    .then(function(html) {
+      var savedMatch = html.match(/window\.__savedFaqData\s*=\s*(\[[\s\S]*?\]);/);
+      var defaultMatch = html.match(/let faqData\s*=\s*(\[[\s\S]*?\]);/);
+      var literal = savedMatch ? savedMatch[1] : (defaultMatch ? defaultMatch[1] : null);
+      if (!literal) return;
+
+      var data;
+      try { data = new Function('return ' + literal)(); } catch (e) { return; }
+      if (!data || !data.length) return;
+
+      var items = data.slice(0, 4);
+      listEl.innerHTML = items.map(function(item) {
+        var firstText = (item.blocks || []).filter(function(b) { return b.type === 'text'; })[0];
+        var answer = firstText ? firstText.content : '';
+        return '<div class="faq-item">' +
+          '<div class="faq-q">Q. ' + escapeHtmlIdx(item.q) + '</div>' +
+          '<div class="faq-a">' + escapeHtmlIdx(answer) + '</div>' +
+          '</div>';
+      }).join('');
+    })
+    .catch(function() { /* file:// 등으로 fetch가 막힌 경우: 기존 미리보기 내용 유지 */ });
+
+  function escapeHtmlIdx(str) {
+    var div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+})();
+</script>
 
 <style>
   /* [FAQ 섹션 - 높이 축소 보정 CSS] 내용은 동일, 크기만 축소 */
