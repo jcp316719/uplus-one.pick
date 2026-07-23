@@ -992,6 +992,10 @@
   .biz-val { font-size:12px; color:#aaa; flex:1; line-height:1.5; }
   body.edit-mode .editable-biz { border-bottom:1.5px dashed #E6007E; cursor:text; outline:none; border-radius:2px; }
   body.edit-mode .editable-biz:focus { background:#fff5fa; }
+  .biz-links-row { margin-top:6px; padding-top:12px; border-top:1px solid #e5e5e5; gap:10px; }
+  .biz-link { font-size:12px; color:#777; font-weight:700; text-decoration:none; }
+  .biz-link:hover { color:#E6007E; text-decoration:underline; }
+  .biz-link-sep { font-size:11px; color:#ccc; }
 
   /* ===== PC 서비스 메뉴 오버라이드 (모바일 기본값보다 뒤에 위치하여 우선 적용) ===== */
   @media (min-width: 768px) {
@@ -2505,6 +2509,11 @@ function saveHTML() {
     <div class="biz-row"><span class="biz-key">고객센터</span><span class="biz-val editable-biz" contenteditable="false">02-2677-0040</span></div>
     <div class="biz-row"><span class="biz-key">개인정보보호책임자</span><span class="biz-val editable-biz" contenteditable="false">최정기</span></div>
     <div class="biz-row"><span class="biz-key">이메일</span><span class="biz-val editable-biz" contenteditable="false">jc316719@naver.com</span></div>
+    <div class="biz-row biz-links-row">
+      <a class="biz-link" href="terms.html">이용약관</a>
+      <span class="biz-link-sep">|</span>
+      <a class="biz-link" href="privacy.html">개인정보처리방침</a>
+    </div>
   </div>
 </div>
 
