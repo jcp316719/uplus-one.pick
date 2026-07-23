@@ -166,8 +166,8 @@
   .cta-call { background:#E6007E; color:#fff; }
   .cta-call:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(230,0,126,0.45); }
   .cta-call .uplus-badge { font-size:13px; font-weight:900; color:#fff; background:rgba(255,255,255,0.25); padding:2px 6px; border-radius:4px; }
-  .cta-notify { background:#222; color:#fff; }
-  .cta-notify:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.35); }
+  .cta-notify { background:linear-gradient(135deg, #4FC9FF, #0080FF); color:#fff; }
+  .cta-notify:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,128,255,0.4); }
   .cta-notify .notify-bell { font-size:16px; line-height:1; }
 
   /* 상세 페이지용 CTA: 짧은 콘텐츠 위에 떠서 겹치지 않도록 sticky 대신 본문 흐름에 고정 배치 */
@@ -631,7 +631,7 @@
   /* ── 알림 신청 모달 ── */
   function notifyModalFormHTML() {
     return `
-      <h3>🔔 알림 신청</h3>
+      <h3>🔔 사전예약 신청</h3>
       <p>이름과 연락처를 남겨주시면<br>가장 먼저 알려드릴게요</p>
       <input class="pw-input" id="notifyNameInput" type="text" placeholder="이름" maxlength="20" style="letter-spacing:normal; text-align:left;" oninput="clearNotifyError()">
       <input class="pw-input" id="notifyPhoneInput" type="tel" placeholder="연락처 (예: 010-1234-5678)" maxlength="13" style="letter-spacing:normal; text-align:left;" inputmode="numeric" oninput="formatPhoneInput(this); clearNotifyError()">
