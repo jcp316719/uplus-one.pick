@@ -49,6 +49,17 @@
   }
   .pw-input:focus { border-color:#E6007E; }
   .pw-input.error { border-color:#ff3b3b; animation:shake .3s; }
+  .pw-select {
+    width:100%; border:2px solid #ddd; border-radius:10px; padding:12px 14px;
+    font-size:15px; text-align:left; letter-spacing:normal; outline:none;
+    margin-bottom:8px; transition:border .2s; background:#fff; color:#222;
+    font-family:inherit; appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23999'%3E%3Cpath d='M5.5 7.5l4.5 4.5 4.5-4.5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center; background-size:16px;
+  }
+  .pw-select:focus { border-color:#E6007E; }
+  .pw-select.error { border-color:#ff3b3b; animation:shake .3s; }
+  .pw-select.placeholder-selected { color:#999; }
   @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
   .pw-error { font-size:12px; color:#ff3b3b; margin-bottom:14px; min-height:16px; }
   .notify-consent-row { display:flex; align-items:center; justify-content:space-between; margin:2px 0 4px; }
@@ -623,7 +634,13 @@
       <h3>🔔 알림 신청</h3>
       <p>이름과 연락처를 남겨주시면<br>가장 먼저 알려드릴게요</p>
       <input class="pw-input" id="notifyNameInput" type="text" placeholder="이름" maxlength="20" style="letter-spacing:normal; text-align:left;" oninput="clearNotifyError()">
-      <input class="pw-input" id="notifyPhoneInput" type="tel" placeholder="연락처 (예: 010-1234-5678)" maxlength="20" style="letter-spacing:normal; text-align:left;" oninput="clearNotifyError()">
+      <input class="pw-input" id="notifyPhoneInput" type="tel" placeholder="연락처 (예: 010-1234-5678)" maxlength="13" style="letter-spacing:normal; text-align:left;" inputmode="numeric" oninput="formatPhoneInput(this); clearNotifyError()">
+      <select class="pw-select placeholder-selected" id="notifyProductSelect" onchange="this.classList.toggle('placeholder-selected', !this.value); clearNotifyError()">
+        <option value="" disabled selected>관심 모델을 선택해주세요</option>
+        <option value="갤럭시 Z플립8">갤럭시 Z플립8</option>
+        <option value="갤럭시 Z폴드8">갤럭시 Z폴드8</option>
+        <option value="갤럭시 Z폴드8 울트라">갤럭시 Z폴드8 울트라</option>
+      </select>
       <input type="text" id="notifyHoneypot" name="website" autocomplete="off" tabindex="-1" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
       <div class="notify-consent-row">
         <label class="notify-consent-label">
@@ -666,6 +683,18 @@
     if (el) el.classList.toggle('show');
   }
 
+  function formatPhoneNumber(value) {
+    let v = value.replace(/[^0-9]/g, '').slice(0, 11);
+    if (v.length < 4) return v;
+    if (v.length < 7) return v.slice(0, 3) + '-' + v.slice(3);
+    if (v.length < 11) return v.slice(0, 3) + '-' + v.slice(3, 6) + '-' + v.slice(6);
+    return v.slice(0, 3) + '-' + v.slice(3, 7) + '-' + v.slice(7);
+  }
+
+  function formatPhoneInput(el) {
+    el.value = formatPhoneNumber(el.value);
+  }
+
   function clearNotifyError() {
     const err = document.getElementById('notifyError');
     if (err) err.textContent = '';
@@ -673,6 +702,8 @@
     const p = document.getElementById('notifyPhoneInput');
     if (n) n.classList.remove('error');
     if (p) p.classList.remove('error');
+    const sel = document.getElementById('notifyProductSelect');
+    if (sel) sel.classList.remove('error');
     const label = document.querySelector('.notify-consent-label');
     if (label) label.classList.remove('error');
   }
@@ -700,6 +731,13 @@
       phoneInput.focus();
       return;
     }
+    const productSelect = document.getElementById('notifyProductSelect');
+    const product = productSelect ? productSelect.value : '';
+    if (!product) {
+      errorEl.textContent = '관심 모델을 선택해주세요';
+      if (productSelect) productSelect.classList.add('error');
+      return;
+    }
     const consentCheckbox = document.getElementById('notifyConsentCheckbox');
     if (!consentCheckbox || !consentCheckbox.checked) {
       errorEl.textContent = '개인정보 수집·이용에 동의해주세요';
@@ -712,7 +750,6 @@
       return;
     }
 
-    const item = preorderData[notifyTargetIdx];
     const btn = document.getElementById('notifySubmitBtn');
     btn.disabled = true;
     btn.textContent = '전송 중...';
@@ -724,7 +761,7 @@
       body: JSON.stringify({
         name: name,
         phone: phone,
-        product: item ? item.title : '',
+        product: product,
         page: location.href,
         time: new Date().toString(),
         consent: true,
