@@ -101,6 +101,23 @@
   }
   body.edit-mode .card-delete-btn { display:flex; }
 
+  /* ── 예약종료 명패 ── */
+  .reservation-closed-stamp {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-12deg);
+    border:4px solid #d32f2f; color:#d32f2f; font-size:22px; font-weight:900;
+    padding:6px 16px; border-radius:10px; background:rgba(255,255,255,0.9);
+    letter-spacing:6px; z-index:20; pointer-events:none; text-align:center; white-space:nowrap;
+  }
+  .preorder-card.reservation-closed .preorder-img-wrap img,
+  .preorder-card.reservation-closed .preorder-info { filter:grayscale(70%); opacity:0.55; }
+  .reservation-toggle-btn {
+    display:none; position:absolute; top:10px; left:10px; border:none; border-radius:14px;
+    padding:5px 10px; font-size:11px; font-weight:700; cursor:pointer; z-index:10;
+  }
+  body.edit-mode .reservation-toggle-btn { display:inline-block; }
+  .reservation-toggle-btn.not-closed { background:#fff; color:#333; border:1px solid #ccc; }
+  .reservation-toggle-btn.is-closed { background:#fff0f0; color:#d32f2f; border:1px solid #d32f2f; }
+
   .preorder-img-wrap {
     width:100%; aspect-ratio:1/1; position:relative; background:#111;
     display:flex; align-items:center; justify-content:center; overflow:hidden; cursor:default;
@@ -399,10 +416,12 @@
 
     preorderData.forEach((item, idx) => {
       const card = document.createElement('div');
-      card.className = 'preorder-card';
+      card.className = 'preorder-card' + (item.reservationClosed ? ' reservation-closed' : '');
       card.dataset.idx = idx;
       card.innerHTML = `
         <button type="button" class="card-delete-btn" onclick="deleteCard(${idx})">✕</button>
+        <button type="button" class="reservation-toggle-btn ${item.reservationClosed ? 'is-closed' : 'not-closed'}" onclick="toggleReservationClosed(${idx})">${item.reservationClosed ? '예약종료 해제' : '예약종료 처리'}</button>
+        ${item.reservationClosed ? `<div class="reservation-closed-stamp">예약종료</div>` : ''}
         <div class="preorder-img-wrap" onclick="handleCardImgClick(${idx})">
           ${item.img
             ? `<img src="${item.img}">`
@@ -450,7 +469,9 @@
       <div class="detail-wrap">
         <button type="button" class="detail-back" onclick="location.href='preorder.html'">← 목록으로</button>
         <div class="detail-hero" onclick="triggerDetailImg(${idx})">
-          ${item.img ? `<img src="${item.img}">` : `<div class="detail-hero-placeholder">🖼️</div>`}
+          <button type="button" class="reservation-toggle-btn ${item.reservationClosed ? 'is-closed' : 'not-closed'}" style="top:10px; left:10px;" onclick="event.stopPropagation(); toggleReservationClosed(${idx})">${item.reservationClosed ? '예약종료 해제' : '예약종료 처리'}</button>
+          ${item.img ? `<img src="${item.img}" style="${item.reservationClosed ? 'filter:grayscale(70%); opacity:0.55;' : ''}">` : `<div class="detail-hero-placeholder">🖼️</div>`}
+          ${item.reservationClosed ? `<div class="reservation-closed-stamp">예약종료</div>` : ''}
           <input type="file" accept="image/*" id="detailImgInput" onchange="replaceDetailImg(${idx}, this)">
         </div>
         <div class="detail-info">
@@ -464,10 +485,15 @@
           <input type="file" id="detailBlockImgInput-${idx}" accept="image/*" style="display:none" onchange="handleAddDetailImage(${idx}, this)">
         </div>
         <div class="detail-cta">
-          <button type="button" class="cta-notify" onclick="openNotifyModal(${idx})">
+          ${item.reservationClosed
+            ? `<button type="button" class="cta-notify" disabled style="opacity:0.5; cursor:not-allowed; background:#999;">
+            <span class="notify-bell">🔔</span>
+            예약종료
+          </button>`
+            : `<button type="button" class="cta-notify" onclick="openNotifyModal(${idx})">
             <span class="notify-bell">🔔</span>
             사전예약
-          </button>
+          </button>`}
           <a class="cta-kakao" href="http://pf.kakao.com/_xdxaxlxfX/chat" target="_blank">
             <div class="talk-bubble">💬</div>
             카톡 문의하기
@@ -634,6 +660,20 @@
     if (!confirm('이 카드를 삭제할까요?')) return;
     preorderData.splice(idx, 1);
     renderList();
+  }
+
+  /* ── 예약종료 토글 ── */
+  function toggleReservationClosed(idx) {
+    if (!editMode) return;
+    const item = preorderData[idx];
+    if (!item) return;
+    item.reservationClosed = !item.reservationClosed;
+    const params = new URLSearchParams(location.search);
+    if (params.get('id') !== null) {
+      renderDetail(idx);
+    } else {
+      renderList();
+    }
   }
 
   route();

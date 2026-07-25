@@ -49,6 +49,11 @@
   .badge-new     { background:#7c3aed; }
   .badge-hot     { background:#ef4444; }
   .badge-support { background:#6366f1; }
+  .badge-soon    { background:#FF8FC7; animation: badgeSoonNeon 1.6s ease-in-out infinite; }
+  @keyframes badgeSoonNeon {
+    0%, 100% { box-shadow: 0 0 6px 1px rgba(255,143,199,0.85), 0 0 14px 3px rgba(255,143,199,0.55); }
+    50%      { box-shadow: 0 0 11px 3px rgba(255,143,199,1), 0 0 22px 6px rgba(255,143,199,0.85); }
+  }
   .badge.off { opacity:0.2; }
   body.edit-mode .badge { cursor:pointer; }
   .badge-add-btn { display:none; font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; background:#e2e8f0; color:#666; border:none; cursor:pointer; }
@@ -253,6 +258,25 @@
     50% {
       box-shadow: 0 0 16px rgba(255,30,0,0.9), 0 0 40px rgba(255,30,0,0.55), 0 0 70px rgba(255,30,0,0.3);
       border-color: #ff1e00;
+    }
+  }
+  /* SOON 네온 글로우 (카드 전체) */
+  .phone-card.soon-card {
+    border: 2px solid #FF8FC7;
+    box-shadow:
+      0 0 8px rgba(255,143,199,0.6),
+      0 0 20px rgba(255,143,199,0.35),
+      0 0 40px rgba(255,143,199,0.15);
+    animation: soon-neon-pulse 2s ease-in-out infinite;
+  }
+  @keyframes soon-neon-pulse {
+    0%, 100% {
+      box-shadow: 0 0 8px rgba(255,143,199,0.6), 0 0 20px rgba(255,143,199,0.35), 0 0 40px rgba(255,143,199,0.15);
+      border-color: #FF8FC7;
+    }
+    50% {
+      box-shadow: 0 0 16px rgba(255,90,170,0.9), 0 0 40px rgba(255,90,170,0.55), 0 0 70px rgba(255,90,170,0.3);
+      border-color: #ff5aaa;
     }
   }
   .badge-event { background: linear-gradient(135deg,#ff6b00,#E6007E); animation: badge-pulse 1.5s infinite; }
@@ -1131,6 +1155,7 @@ const BADGE_DEFS = [
   { key:'new',     label:'최신',      cls:'badge-new' },
   { key:'hot',     label:'인기',      cls:'badge-hot' },
   { key:'support', label:'지원금확대', cls:'badge-support' },
+  { key:'soon',    label:'SOON',       cls:'badge-soon' },
   { key:'event',   label:'EVENT',     cls:'badge-event' },
 ];
 
@@ -1838,8 +1863,9 @@ function updateBadgeRow(cardId) {
   const cardEl = document.getElementById(cardId);
   if (!cardEl) return;
 
-  // event-card 클래스 업데이트
+  // event-card / soon-card 클래스 업데이트 (SOON 우선순위)
   cardEl.classList.toggle('event-card', card.badges.includes('event'));
+  cardEl.classList.toggle('soon-card', card.badges.includes('soon'));
 
   // 배지 행 재렌더
   const badgeRow = cardEl.querySelector('.badge-row');
@@ -1875,16 +1901,17 @@ function updateBadgeRow(cardId) {
   });
 }
 
-// EVENT 배지 카드를 맨 앞으로 정렬
+// SOON → EVENT → 나머지 순으로 카드 정렬 (우선순위: SOON > EVENT)
 function reorderEventCards() {
   const list = document.getElementById('phoneList');
   if (!list) return;
   const allCards = Array.from(list.querySelectorAll('.phone-card'));
   const addBtn = list.querySelector('.add-card-btn');
-  // event-card 먼저, 나머지는 원래 순서 유지
-  const eventCards = allCards.filter(el => el.classList.contains('event-card'));
-  const otherCards = allCards.filter(el => !el.classList.contains('event-card'));
-  [...eventCards, ...otherCards].forEach(el => list.insertBefore(el, addBtn || null));
+  // soon-card 최우선, 그 다음 event-card, 나머지는 원래 순서 유지
+  const soonCards = allCards.filter(el => el.classList.contains('soon-card'));
+  const eventCards = allCards.filter(el => el.classList.contains('event-card') && !el.classList.contains('soon-card'));
+  const otherCards = allCards.filter(el => !el.classList.contains('event-card') && !el.classList.contains('soon-card'));
+  [...soonCards, ...eventCards, ...otherCards].forEach(el => list.insertBefore(el, addBtn || null));
 }
 
 // ── HTML 저장 ──
@@ -2016,10 +2043,13 @@ function addNewCard() {
       cardEl.classList.toggle('sold-out', isSoldOut);
     }
   });
-  // EVENT 배지 카드에 event-card 클래스 및 기간 태그 초기화
+  // SOON/EVENT 배지 카드에 클래스 및 기간 태그 초기화 (SOON 우선순위)
   cards.forEach(card => {
     const cardEl = document.getElementById(card.id);
     if (!cardEl) return;
+    if (card.badges.includes('soon')) {
+      cardEl.classList.add('soon-card');
+    }
     if (card.badges.includes('event')) {
       cardEl.classList.add('event-card');
       const badgeRow = cardEl.querySelector('.badge-row');

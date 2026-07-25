@@ -47,6 +47,11 @@
   .badge-new     { background:#7c3aed; }
   .badge-hot     { background:#ef4444; }
   .badge-support { background:#6366f1; }
+  .badge-soon    { background:#FF8FC7; animation: badgeSoonNeon 1.6s ease-in-out infinite; }
+  @keyframes badgeSoonNeon {
+    0%, 100% { box-shadow: 0 0 6px 1px rgba(255,143,199,0.85), 0 0 14px 3px rgba(255,143,199,0.55); }
+    50%      { box-shadow: 0 0 11px 3px rgba(255,143,199,1), 0 0 22px 6px rgba(255,143,199,0.85); }
+  }
   .badge.off { opacity:0.2; }
   body.edit-mode .badge { cursor:pointer; }
   .badge-add-btn { display:none; font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; background:#e2e8f0; color:#666; border:none; cursor:pointer; }
@@ -242,6 +247,25 @@
     50% {
       box-shadow: 0 0 16px rgba(255,30,0,0.9), 0 0 40px rgba(255,30,0,0.55), 0 0 70px rgba(255,30,0,0.3);
       border-color: #ff1e00;
+    }
+  }
+  /* SOON 네온 글로우 (카드 전체) */
+  .phone-card.soon-card {
+    border: 2px solid #FF8FC7;
+    box-shadow:
+      0 0 8px rgba(255,143,199,0.6),
+      0 0 20px rgba(255,143,199,0.35),
+      0 0 40px rgba(255,143,199,0.15);
+    animation: soon-neon-pulse 2s ease-in-out infinite;
+  }
+  @keyframes soon-neon-pulse {
+    0%, 100% {
+      box-shadow: 0 0 8px rgba(255,143,199,0.6), 0 0 20px rgba(255,143,199,0.35), 0 0 40px rgba(255,143,199,0.15);
+      border-color: #FF8FC7;
+    }
+    50% {
+      box-shadow: 0 0 16px rgba(255,90,170,0.9), 0 0 40px rgba(255,90,170,0.55), 0 0 70px rgba(255,90,170,0.3);
+      border-color: #ff5aaa;
     }
   }
   .badge-event { background: linear-gradient(135deg,#ff6b00,#E6007E); animation: badge-pulse 1.5s infinite; }
@@ -467,6 +491,7 @@ const BADGE_DEFS = [
   { key:'new',     label:'최신',      cls:'badge-new' },
   { key:'hot',     label:'인기',      cls:'badge-hot' },
   { key:'support', label:'지원금확대', cls:'badge-support' },
+  { key:'soon',    label:'SOON',       cls:'badge-soon' },
   { key:'event',   label:'EVENT',     cls:'badge-event' },
 ];
 
@@ -563,13 +588,8 @@ let cards = [
 function renderAll() {
   const list = document.getElementById('phoneList');
   list.innerHTML = '';
-  const sorted = [...cards].sort((a, b) => {
-    const aEvent = a.badges.includes('event');
-    const bEvent = b.badges.includes('event');
-    if (aEvent && !bEvent) return -1;
-    if (!aEvent && bEvent) return 1;
-    return 0;
-  });
+  const rankOf = c => c.badges.includes('soon') ? 0 : (c.badges.includes('event') ? 1 : 2);
+  const sorted = [...cards].sort((a, b) => rankOf(a) - rankOf(b));
   sorted.forEach(card => list.appendChild(buildCard(card)));
   const addBtn = document.createElement('div');
   addBtn.className = 'add-card-btn';
@@ -581,7 +601,7 @@ function renderAll() {
 function buildCard(card) {
   const el = document.createElement('div');
   const storageSoldOut = !card.soldOut && card.storages[card.selectedStorage] && !!card.storages[card.selectedStorage].soldOut;
-  el.className = 'phone-card' + (card.badges.includes('event') ? ' event-card' : '') + ((card.soldOut || storageSoldOut) ? ' sold-out' : '');
+  el.className = 'phone-card' + (card.badges.includes('soon') ? ' soon-card' : '') + (card.badges.includes('event') ? ' event-card' : '') + ((card.soldOut || storageSoldOut) ? ' sold-out' : '');
   el.id = card.id;
 
   const st = card.storages[card.selectedStorage];
@@ -991,7 +1011,8 @@ function openBadgeModal(cardId) {
 }
 function closeBadgeModal() {
   document.getElementById('badgeModalOverlay').classList.remove('show');
-  if (currentBadgeRowId) reRenderCard(cards.find(c => c.id === currentBadgeRowId));
+  // SOON/EVENT 배지 토글로 우선순위 정렬이 바뀔 수 있으므로 전체 목록을 다시 그림
+  if (currentBadgeRowId) { renderAll(); currentBadgeRowId = null; }
 }
 function toggleBadge(cardId, key) {
   const card = cards.find(c => c.id === cardId);
