@@ -332,6 +332,39 @@ window.__combo = {
   }
   .toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
   @media (min-width:900px) { .toast { bottom:34px; } }
+
+  /* 이미지 저장 시트 — 인앱 브라우저에서도 확실히 저장되도록 길게 눌러 저장 */
+  .imgsheet {
+    position:fixed; inset:0; z-index:500; display:none;
+    background:rgba(17,17,17,.92); overflow-y:auto;
+    -webkit-overflow-scrolling:touch; padding:16px 14px 120px;
+  }
+  .imgsheet.on { display:block; }
+  .is-guide {
+    max-width:520px; margin:6px auto 14px; text-align:center;
+    color:#fff; font-size:15px; font-weight:800; line-height:1.6;
+  }
+  .is-guide b { color:#FFD84D; }
+  .is-guide small {
+    display:block; margin-top:6px; font-size:12.5px; font-weight:600;
+    color:rgba(255,255,255,.72); line-height:1.6;
+  }
+  .imgsheet img {
+    display:block; width:100%; max-width:520px; margin:0 auto;
+    border-radius:14px; background:#fff;
+    -webkit-touch-callout:default; touch-action:manipulation;
+  }
+  .is-bar {
+    position:fixed; left:0; right:0; bottom:0; z-index:501;
+    display:flex; gap:9px; padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+    background:rgba(17,17,17,.96);
+  }
+  .is-bar button {
+    flex:1; padding:15px; border:none; border-radius:12px;
+    font-size:15px; font-weight:800; font-family:inherit; cursor:pointer;
+  }
+  .is-close { background:rgba(255,255,255,.16); color:#fff; }
+  .is-dl { background:#E6007E; color:#fff; }
   .btn-kakao-main { background:#FEE500; color:#3C1E1E; }
   .btn-kakao-main:hover { background:#F5DC00; }
   .btn-hint { font-size:11.5px; color:#7c7c86; font-weight:600; text-align:center; margin-top:7px; line-height:1.5; }
@@ -960,7 +993,6 @@ function canShareFiles(){
               navigator.canShare({ files: [new File([new Blob([''])], 'a.png', { type:'image/png' })] }));
   } catch(e){ return false; }
 }
-function useShare(){ return isIOS() && canShareFiles(); }
 function shareLabel(){ return '조건 이미지 저장'; }
 
 function toast(msg){
@@ -1148,6 +1180,11 @@ async function buildEstimateCanvas(){
   return out;
 }
 
+function isMobile(){
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+         (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
+}
+
 function saveEstimate(btn){
   const label = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = '만드는 중…'; }
@@ -1156,28 +1193,62 @@ function saveEstimate(btn){
   buildEstimateCanvas().then(cv => {
     const name = ((card.name || '견적') + '_' + (curStorage().label || '') + '_UPick')
                  .replace(/[^0-9A-Za-z가-힣_]/g, '') + '.png';
+
+    /* 모바일은 인앱 브라우저(네이버·카톡 등)에서 blob 다운로드가 조용히 실패한다.
+       이미지를 화면에 띄우고 길게 눌러 저장하게 하면 어디서든 확실히 저장된다. */
+    if (isMobile()) {
+      openImageSheet(cv.toDataURL('image/png'), name);
+      restore();
+      return;
+    }
+
     cv.toBlob(blob => {
       if (!blob) { restore(); toast('이미지를 만들지 못했습니다.'); return; }
-      const file = new File([blob], name, { type: 'image/png' });
-
-      const done = '이미지가 저장되었습니다.<br>카카오톡 채팅창의 <b>+</b> → <b>앨범</b>에서 첨부해 주세요.';
-
-      if (useShare()) {
-        navigator.share({ files: [file], title: (card.name || '') + ' 견적' })
-          .then(() => restore())
-          .catch(err => {
-            restore();
-            if (err && err.name === 'AbortError') return;
-            downloadBlob(blob, name);
-            toast(done);
-          });
-        return;
-      }
       downloadBlob(blob, name);
       restore();
-      toast(done);
+      toast('이미지가 <b>다운로드 폴더</b>에 저장되었습니다.');
     }, 'image/png');
   }).catch(() => { restore(); toast('이미지를 만들지 못했습니다.'); });
+}
+
+/* 이미지 저장 시트 */
+function openImageSheet(dataUrl, name){
+  let el = document.getElementById('imgSheet');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'imgSheet';
+    el.className = 'imgsheet';
+    document.body.appendChild(el);
+  }
+  const ios = isIOS();
+  el.innerHTML =
+    '<div class="is-guide">이미지를 <b>길게 눌러</b> ' +
+      (ios ? '<b>“사진에 추가”</b>' : '<b>“이미지 저장”</b>') + ' 하세요' +
+      '<small>저장 후 카카오톡 채팅창의 + → 앨범에서 첨부하시면 됩니다</small>' +
+    '</div>' +
+    '<img src="' + dataUrl + '" alt="' + esc(name) + '">' +
+    '<div class="is-bar">' +
+      '<button class="is-close" onclick="closeImageSheet()">닫기</button>' +
+      (canShareFiles()
+        ? '<button class="is-dl" onclick="shareImageSheet()">다른 앱으로 보내기</button>'
+        : '') +
+    '</div>';
+  el._data = dataUrl; el._name = name;
+  el.classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+function closeImageSheet(){
+  const el = document.getElementById('imgSheet');
+  if (el) el.classList.remove('on');
+  document.body.style.overflow = '';
+}
+function shareImageSheet(){
+  const el = document.getElementById('imgSheet');
+  if (!el || !el._data) return;
+  fetch(el._data).then(r => r.blob()).then(blob => {
+    const file = new File([blob], el._name, { type: 'image/png' });
+    if (canShareFiles()) navigator.share({ files: [file] }).catch(function(){});
+  }).catch(function(){ toast('이미지를 길게 눌러 저장해 주세요.'); });
 }
 
 function downloadBlob(blob, name){
