@@ -393,6 +393,9 @@ window.__combo = {
     padding:14px 20px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;
     white-space:nowrap;
   }
+  /* 영수증의 상담 버튼이 화면에 들어오면 고정바는 물러난다 */
+  .mbar { transition:transform .25s ease, opacity .25s ease; }
+  .mbar.hide { transform:translateY(110%); opacity:0; pointer-events:none; }
   @media (min-width:900px) { .mbar { display:none; } }
 
   .state-msg { padding:90px 20px; text-align:center; color:#6b6b75; font-size:14px; line-height:1.9; }
@@ -912,6 +915,28 @@ function paintReceipt(){
   document.getElementById('colRcp').innerHTML = h;
   animateTo(s.monthlyTotal);
   if (editMode) applyEditable(true);
+  watchMainBtn();
+}
+
+/* 영수증의 카톡 버튼이 보이면 하단 고정바를 숨긴다 (중복 제거)
+   var 로 선언해야 한다 — 페이지 로드 코드가 이 줄보다 먼저 실행되므로
+   let 이면 초기화 전 접근이 되어 렌더링이 통째로 실패한다.
+   화면이 다시 그려질 때마다 감시자를 새로 만들지 않고, 한 번만 연결한 뒤 갱신만 한다. */
+var _barUpd;   /* = null 을 붙이면 안 된다 — 로드 중 이미 연결된 값을 되돌려 리스너가 중복된다 */
+function watchMainBtn(){
+  if (!_barUpd) {
+    _barUpd = function(){
+      const t = document.querySelector('.btn-kakao-main');
+      const bar = document.querySelector('.mbar');
+      if (!t || !bar) return;
+      const r = t.getBoundingClientRect();
+      const visible = r.top < (window.innerHeight - 60) && r.bottom > 0;
+      bar.classList.toggle('hide', visible);
+    };
+    window.addEventListener('scroll', _barUpd, { passive: true });
+    window.addEventListener('resize', _barUpd);
+  }
+  _barUpd();
 }
 
 /* ───── 선택 ───── */
