@@ -1207,7 +1207,7 @@ if(window.wcs) {
   }
 </style>
 
-<style>.promo-card{cursor:pointer;transition:transform .12s,box-shadow .12s}@media(hover:hover){.promo-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}}body.edit-mode .promo-card{cursor:default;transform:none;box-shadow:none}</style><style>.promo-card{cursor:pointer;transition:transform .12s,box-shadow .12s}@media(hover:hover){.promo-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}}body.edit-mode .promo-card{cursor:default;transform:none;box-shadow:none}</style></head>
+<style>.promo-card{cursor:pointer;transition:transform .12s,box-shadow .12s}@media(hover:hover){.promo-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}}body.edit-mode .promo-card{cursor:default;transform:none;box-shadow:none}</style><style>.promo-card{cursor:pointer;transition:transform .12s,box-shadow .12s}@media(hover:hover){.promo-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}}body.edit-mode .promo-card{cursor:default;transform:none;box-shadow:none}</style><style>.promo-card{cursor:pointer;transition:transform .12s,box-shadow .12s}@media(hover:hover){.promo-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}}body.edit-mode .promo-card{cursor:default;transform:none;box-shadow:none}</style></head>
 <body class="">
 
 <!-- 비밀번호 모달 -->
@@ -1274,7 +1274,7 @@ if(window.wcs) {
 <!-- 메인 배너 슬라이더 -->
 <div class="tv-slider-wrap" id="tvSlider">
 
-  <div class="tv-slider-track" id="tvTrack" style="transform: translateX(-200%);">
+  <div class="tv-slider-track" id="tvTrack" style="transform: translateX(-100%);">
     <div class="tv-slide">
       <div class="img-wrap img-wrap-banner" data-label="배너 1 (PC)" data-label-mobile="배너 1 (모바일)">
         
@@ -1324,12 +1324,12 @@ if(window.wcs) {
 
   <button class="tv-arrow prev" onclick="slideTo(tvCurrent - 1)">‹</button>
   <button class="tv-arrow next" onclick="slideTo(tvCurrent + 1)">›</button>
-  <div class="tv-counter" id="tvCounter">3 / 5</div>
+  <div class="tv-counter" id="tvCounter">2 / 5</div>
 
   <div class="tv-dots" id="tvDots">
     <span class="" onclick="slideTo(0)"></span>
-    <span onclick="slideTo(1)" class=""></span>
-    <span onclick="slideTo(2)" class="active"></span>
+    <span onclick="slideTo(1)" class="active"></span>
+    <span onclick="slideTo(2)" class=""></span>
     <span onclick="slideTo(3)" class=""></span>
     <span onclick="slideTo(4)" class=""></span>
   </div>
@@ -1486,7 +1486,7 @@ if(window.wcs) {
           </div>
           <div class="promo-plan-row">
             <span class="promo-plan-label">요금제 기준</span>
-            <span class="promo-plan-tag editable" contenteditable="false">LTE 키즈 22</span>
+            <span class="promo-plan-tag editable" contenteditable="false">데이터플랜 MAX</span>
           </div>
         </div>
       </div>
@@ -1872,8 +1872,8 @@ if(window.wcs) {
 </div>
 
 <!-- 알림 토스트 팝업 -->
-<div id="toast-popup" style="position: fixed; bottom: 90px; right: 16px; background: rgb(34, 34, 34); color: rgb(255, 255, 255); border-radius: 14px; padding: 12px 16px; font-size: 13px; font-weight: 600; max-width: 230px; box-shadow: rgba(0, 0, 0, 0.35) 0px 4px 20px; z-index: 9999; display: block; line-height: 1.5; animation: 0.4s ease 0s 1 normal none running toastIn;">
-  <span id="toast-text">🔔 <b>임*아</b> 고객님<br>갤럭시 S26 Ultra 문의 완료!</span>
+<div id="toast-popup" style="position: fixed; bottom: 90px; right: 16px; background: rgb(34, 34, 34); color: rgb(255, 255, 255); border-radius: 14px; padding: 12px 16px; font-size: 13px; font-weight: 600; max-width: 230px; box-shadow: rgba(0, 0, 0, 0.35) 0px 4px 20px; z-index: 9999; display: none; line-height: 1.5; animation: 0.4s ease 0s 1 normal forwards running toastOut;">
+  <span id="toast-text">🔔 <b>김*준</b> 고객님<br>인터넷 개통 신청!</span>
 </div>
 
 <style>
