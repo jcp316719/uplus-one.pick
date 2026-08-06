@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <script src="geo-block.js"></script>
-<meta name="description" content="LG유플러스 인터넷·IPTV 결합 최저가 신청 - Disney+, OTT 포함 다양한 요금제. U+ONE 대리점.">
+<meta name="description" content="LG유플러스 인터넷·IPTV 결합 최저가 신청 - Disney+, OTT 포함 다양한 요금제. U+Pick 대리점.">
 <meta name="keywords" content="유플러스 인터넷, 유플러스 IPTV, LG유플러스 인터넷, 인터넷 IPTV 결합, 유플러스 OTT">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>인터넷/IPTV - U+ one</title>
+<title>인터넷/IPTV - U+ Pick</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:#f7f8fa; max-width:1200px; margin:0 auto; min-height:100vh; }
@@ -714,6 +714,10 @@ function toggleEdit(on) {
 /* 비번 */
 var keyBuffer = '';
 document.addEventListener('keydown', function(e) {
+  if (!e.key || e.key.length !== 1) return;
+  var _t = e.target;
+  if (_t && (_t.tagName === 'INPUT' || _t.tagName === 'TEXTAREA' ||
+             _t.tagName === 'SELECT' || _t.isContentEditable)) return;
   keyBuffer += e.key.toLowerCase();
   if (keyBuffer.length > SECRET_KEY.length) keyBuffer = keyBuffer.slice(-SECRET_KEY.length);
   if (keyBuffer === 'adminjc') { keyBuffer=''; openPwModal(); }

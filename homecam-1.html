@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <script src="geo-block.js"></script>
-<meta name="description" content="LG유플러스 홈캠·도어캠 월 요금 최저가 - U+스마트홈 결합 할인 혜택. U+ONE 대리점.">
+<meta name="description" content="LG유플러스 홈캠·도어캠 월 요금 최저가 - U+스마트홈 결합 할인 혜택. U+Pick 대리점.">
 <meta name="keywords" content="유플러스 홈캠, 유플러스 도어캠, LG유플러스 홈캠, 가정용 CCTV, 스마트홈 카메라">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>홈캠·도어캠 - U+ one</title>
+<title>홈캠·도어캠 - U+ Pick</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:#f7f8fa; max-width:1200px; margin:0 auto; min-height:100vh; }
@@ -593,6 +593,10 @@ function deleteCard(cardId) {
 
 // ── 관리자 모드 ──
 document.addEventListener('keydown', e => {
+  if (!e.key || e.key.length !== 1) return;
+  var _t = e.target;
+  if (_t && (_t.tagName === 'INPUT' || _t.tagName === 'TEXTAREA' ||
+             _t.tagName === 'SELECT' || _t.isContentEditable)) return;
   keyBuffer += e.key.toLowerCase();
   if (keyBuffer.length > SECRET_KEY.length) keyBuffer = keyBuffer.slice(-SECRET_KEY.length);
   if (keyBuffer === SECRET_KEY) { keyBuffer=''; openPwModal(); }
@@ -604,8 +608,8 @@ function checkPassword() {
   if (v === ADMIN_PASSWORD) {
     closePwModal();
     document.getElementById('editToolbar').classList.add('visible');
-    document.getElementById('editBtn').textContent = '편집 시작';
     editMode = false;
+    onEditBtnClick();   // 인증 즉시 편집모드 진입 (다른 페이지와 동일)
   } else {
     document.getElementById('pwInput').classList.add('error');
     document.getElementById('pwError').textContent = '비밀번호가 틀렸습니다.';
@@ -614,7 +618,7 @@ function checkPassword() {
 function onEditBtnClick() {
   editMode = !editMode;
   document.body.classList.toggle('edit-mode', editMode);
-  document.getElementById('editBtn').textContent = editMode ? '편집 완료' : '편집 시작';
+  document.getElementById('editBtn').textContent = editMode ? '✅ 편집 완료' : '편집 시작';
   document.getElementById('toolbarLabel').textContent = editMode ? '✏️ 편집 중...' : '✏️ 관리자 편집 모드';
   const saveBtn = document.getElementById('saveBtn'); if(saveBtn) saveBtn.style.display = editMode ? 'none' : 'inline-block';
   renderAll();
