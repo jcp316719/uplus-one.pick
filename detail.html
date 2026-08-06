@@ -941,7 +941,16 @@ function summaryText(){
     '월 예상금액: ' + fmt(s.monthlyTotal)
   ].filter(Boolean).join('\n');
 }
-function openKakao(){ window.open(KAKAO_URL, '_blank'); }
+/* 카카오톡 채널 열기.
+   네이버·카톡 등 인앱 브라우저는 새 창(window.open)을 막는 경우가 많아
+   막히면 현재 창에서 그대로 이동시킨다. */
+function openKakao(){
+  let w = null;
+  try { w = window.open(KAKAO_URL, '_blank'); } catch(e){}
+  if (!w || w.closed || typeof w.closed === 'undefined') {
+    location.href = KAKAO_URL;
+  }
+}
 
 /* 클립보드 복사 (구형 브라우저·비보안 환경 대비 폴백 포함) */
 function copyText(t){
@@ -971,10 +980,11 @@ function legacyCopy(t){
    텍스트 붙여넣기가 가장 빠른 경로다. */
 function kakaoConsult(){
   const ok = copyText(summaryText());
-  // window.open 은 사용자 클릭 안에서 바로 호출해야 팝업 차단에 걸리지 않는다
-  openKakao();
+  // 창이 바뀌기 전에 안내를 먼저 띄운다
   toast(ok ? '선택하신 조건이 복사되었습니다.<br>채팅 입력창을 길게 눌러 <b>붙여넣기</b> 해주세요.'
            : '채팅창에 문의 내용을 입력해 주세요.');
+  // window.open 은 사용자 클릭 안에서 바로 호출해야 팝업 차단에 걸리지 않는다
+  openKakao();
 }
 
 /* ───── 조건 이미지 저장 / 공유 ─────
