@@ -332,12 +332,18 @@ window.__combo = {
   }
   .toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
   @media (min-width:900px) { .toast { bottom:34px; } }
+  .btn-kakao-main { background:#FEE500; color:#3C1E1E; }
+  .btn-kakao-main:hover { background:#F5DC00; }
+  .btn-hint { font-size:11.5px; color:#7c7c86; font-weight:600; text-align:center; margin-top:7px; line-height:1.5; }
+
   .btn-pair { display:flex; gap:9px; margin-top:9px; }
-  .btn-pair a {
+  .btn-pair a, .btn-pair button {
     flex:1; display:flex; align-items:center; justify-content:center; gap:5px;
     padding:13px; border-radius:12px; font-size:13.5px; font-weight:800;
+    font-family:inherit; cursor:pointer;
   }
-  .btn-kakao { background:#FEE500; color:#3C1E1E; }
+  .btn-sub { background:#fff; border:1.5px solid #d2d2da; color:#111; }
+  .btn-sub:disabled { color:#a8a8b2; border-color:#e6e6ea; cursor:default; }
   .btn-tel { background:#fff; border:1.5px solid #d2d2da; color:#111; }
 
   /* 모바일 고정바 */
@@ -350,8 +356,9 @@ window.__combo = {
   .mbar .k { font-size:11px; color:#55555f; font-weight:700; }
   .mbar .v { font-size:19px; font-weight:900; color:#E6007E; letter-spacing:-.5px; }
   .mbar .b {
-    background:#E6007E; color:#fff; border:none; border-radius:11px;
-    padding:14px 24px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;
+    background:#FEE500; color:#3C1E1E; border:none; border-radius:11px;
+    padding:14px 20px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;
+    white-space:nowrap;
   }
   @media (min-width:900px) { .mbar { display:none; } }
 
@@ -646,7 +653,7 @@ function render(){
     '</div></div>' +
     '<div class="mbar">' +
       '<div style="flex:1;min-width:0"><div class="k">월 예상 금액</div><div class="v num" id="mbarPrice">-</div></div>' +
-      '<button class="b" id="mbarBtn" onclick="saveEstimate(this)">' + shareLabel() + '</button>' +
+      '<button class="b" id="mbarBtn" onclick="kakaoConsult()">💬 카톡상담</button>' +
     '</div>' +
     '<div class="toast" id="toast"></div>';
 
@@ -862,9 +869,10 @@ function paintReceipt(){
 
   if (isSoldOut()) h += '<div class="rcp-soldout">재고 소진 — 입고 문의 바랍니다</div>';
 
-  h += '<button class="btn-apply" id="btnSave" onclick="saveEstimate(this)">📷 ' + shareLabel() + '</button>' +
+  h += '<button class="btn-apply btn-kakao-main" onclick="kakaoConsult()">💬 카카오톡으로 상담하기</button>' +
+    '<div class="btn-hint">선택하신 조건이 복사됩니다 · 채팅창에 붙여넣기만 하면 끝</div>' +
     '<div class="btn-pair">' +
-      '<a class="btn-kakao" href="#" onclick="openKakao();return false;">💬 카톡상담</a>' +
+      '<button class="btn-sub" id="btnSave" onclick="saveEstimate(this)">📷 ' + shareLabel() + '</button>' +
       '<a class="btn-tel" href="tel:' + TEL + '">📞 전화상담</a>' +
     '</div></div>';
 
@@ -902,17 +910,58 @@ function summaryText(){
 }
 function openKakao(){ window.open(KAKAO_URL, '_blank'); }
 
+/* 클립보드 복사 (구형 브라우저·비보안 환경 대비 폴백 포함) */
+function copyText(t){
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).catch(function(){ legacyCopy(t); });
+      return true;
+    }
+  } catch(e){}
+  return legacyCopy(t);
+}
+function legacyCopy(t){
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = t;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, ta.value.length);
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch(e){ return false; }
+}
+
+/* 카카오톡 상담 — 요약을 복사한 뒤 채팅창을 연다.
+   카카오톡 채널 상담방은 외부 앱에서 이미지를 직접 받지 못하므로
+   텍스트 붙여넣기가 가장 빠른 경로다. */
+function kakaoConsult(){
+  const ok = copyText(summaryText());
+  // window.open 은 사용자 클릭 안에서 바로 호출해야 팝업 차단에 걸리지 않는다
+  openKakao();
+  toast(ok ? '선택하신 조건이 복사되었습니다.<br>채팅 입력창을 길게 눌러 <b>붙여넣기</b> 해주세요.'
+           : '채팅창에 문의 내용을 입력해 주세요.');
+}
+
 /* ───── 조건 이미지 저장 / 공유 ─────
    화면 캡처가 아니라 캔버스에 직접 그린다.
    기기 폭·스크롤 위치와 무관하게 항상 동일한 결과가 나온다. */
 
+/* 아이폰은 사진 앱에 저장하려면 공유 시트를 거쳐야 한다.
+   안드로이드·PC 는 바로 내려받는 편이 빠르고 예측 가능하다. */
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
 function canShareFiles(){
   try {
     return !!(navigator.canShare && navigator.share &&
               navigator.canShare({ files: [new File([new Blob([''])], 'a.png', { type:'image/png' })] }));
   } catch(e){ return false; }
 }
-function shareLabel(){ return canShareFiles() ? '조건 이미지 공유' : '조건 이미지 저장'; }
+function useShare(){ return isIOS() && canShareFiles(); }
+function shareLabel(){ return '조건 이미지 저장'; }
 
 function toast(msg){
   const el = document.getElementById('toast');
@@ -1111,20 +1160,22 @@ function saveEstimate(btn){
       if (!blob) { restore(); toast('이미지를 만들지 못했습니다.'); return; }
       const file = new File([blob], name, { type: 'image/png' });
 
-      if (canShareFiles()) {
+      const done = '이미지가 저장되었습니다.<br>카카오톡 채팅창의 <b>+</b> → <b>앨범</b>에서 첨부해 주세요.';
+
+      if (useShare()) {
         navigator.share({ files: [file], title: (card.name || '') + ' 견적' })
-          .then(() => { restore(); })
+          .then(() => restore())
           .catch(err => {
             restore();
             if (err && err.name === 'AbortError') return;
             downloadBlob(blob, name);
-            toast('이미지가 저장되었습니다.<br>카카오톡 상담창에 첨부해 주세요.');
+            toast(done);
           });
         return;
       }
       downloadBlob(blob, name);
       restore();
-      toast('이미지가 저장되었습니다.<br>카카오톡 상담창에 첨부해 주세요.');
+      toast(done);
     }, 'image/png');
   }).catch(() => { restore(); toast('이미지를 만들지 못했습니다.'); });
 }
