@@ -2,10 +2,10 @@
 <html lang="ko"><head>
 <meta charset="UTF-8">
 <script src="geo-block.js"></script>
-<meta name="description" content="LG유플러스 키즈폰 최저가 - 키즈폰 무너2 등 어린이 전용 스마트폰 지원금 최대 혜택. U+ONE 대리점.">
+<meta name="description" content="LG유플러스 키즈폰 최저가 - 키즈폰 무너2 등 어린이 전용 스마트폰 지원금 최대 혜택. U+Pick 대리점.">
 <meta name="keywords" content="유플러스 키즈폰, 키즈폰 무너2, 어린이 휴대폰, 유플러스 어린이폰, 키즈폰 추천">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>키즈폰 - U+ one</title>
+<title>키즈폰 - U+ Pick</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:#f7f8fa; max-width:1200px; margin:0 auto; min-height:100vh; }
@@ -1058,6 +1058,10 @@ function toggleEdit(on) {
 // ── 비번 ──
 let keyBuffer2 = '';
 document.addEventListener('keydown', e => {
+  if (!e.key || e.key.length !== 1) return;
+  var _t = e.target;
+  if (_t && (_t.tagName === 'INPUT' || _t.tagName === 'TEXTAREA' ||
+             _t.tagName === 'SELECT' || _t.isContentEditable)) return;
   keyBuffer2 += e.key.toLowerCase();
   if (keyBuffer2.length > SECRET_KEY.length) keyBuffer2 = keyBuffer2.slice(-SECRET_KEY.length);
   if (keyBuffer2 === SECRET_KEY) { keyBuffer2 = ''; openPwModal(); }
@@ -1148,4 +1152,99 @@ function saveHTML() {
 
 
 
+
+<!-- ▼▼▼ 상세페이지 연결 (detail.html) ▼▼▼ -->
+<script data-detail-link="1">
+(function () {
+  var SRC = 'kidsphone-1';
+  var IGNORE = '.color-dot,.color-name-label,.color-dot-wrap,.color-add-dot,.storage-btn,' +
+               '.phone-img-wrap,.badge,.badge-add-btn,.badge-row,.card-delete-btn,' +
+               '.brand-select-wrap,.add-card-btn,input,select,button,a,[contenteditable="true"]';
+
+  var st = document.createElement('style');
+  st.textContent = '.phone-card{cursor:pointer;transition:transform .12s,box-shadow .12s}' +
+                   '@media(hover:hover){.phone-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}}' +
+                   'body.edit-mode .phone-card{cursor:default;transform:none;box-shadow:none}';
+  document.head.appendChild(st);
+
+  document.addEventListener('click', function (e) {
+    try { if (typeof editMode !== 'undefined' && editMode) return; } catch (err) {}
+    if (!e.target || !e.target.closest) return;
+    var el = e.target.closest('.phone-card');
+    if (!el || !el.id) return;
+    if (e.target.closest(IGNORE)) return;
+
+    var data = null;
+    try {
+      if (typeof cards !== 'undefined' && cards) {
+        data = cards.filter(function (c) { return c.id === el.id; })[0] || null;
+      }
+    } catch (err) {}
+
+    try {
+      sessionStorage.removeItem('uplus_detail');
+      if (data) sessionStorage.setItem('uplus_detail', JSON.stringify({ src: SRC, card: data }));
+    } catch (err) {}
+
+    location.href = 'detail.html?src=' + SRC + '&id=' + encodeURIComponent(el.id);
+  }, false);
+})();
+</script>
+<!-- ▲▲▲ 상세페이지 연결 ▲▲▲ -->
+
+<!-- ▼▼▼ 메인에서 넘어온 ?open= 처리 → 상세페이지로 자동 이동 ▼▼▼ -->
+<script data-open-forward="1">
+(function () {
+  var q = new URLSearchParams(location.search);
+  var want = q.get('open');
+  if (!want) return;
+
+  function upNorm(s){
+    return String(s || '')
+      .replace(/\([^)]*\)/g, '')
+      .toLowerCase()
+      .replace(/프로맥스/g, 'promax').replace(/프로/g, 'pro')
+      .replace(/울트라/g, 'ultra').replace(/플러스/g, 'plus')
+      .replace(/맥스/g, 'max').replace(/에디션/g, 'edition')
+      .replace(/[^0-9a-z가-힣]/g, '');
+  }
+
+  function go(){
+    var list = [];
+    try { if (typeof cards !== 'undefined' && cards) list = cards; } catch (e) {}
+    if (!list.length) return;
+
+    // 브랜드 접두어를 떼고도 비교한다 ('갤럭시 Z Flip5' ↔ 'Z Flip5')
+    function upBase(s){
+      return upNorm(s).replace(/^(갤럭시|galaxy|삼성|samsung|아이폰|iphone|애플|apple)+/, '');
+    }
+    var key = upNorm(want), keyB = upBase(want);
+    var hit = null;
+    for (var i = 0; i < list.length; i++) {                 // 1) 이름 그대로 일치
+      if (upNorm(list[i].name) === key) { hit = list[i]; break; }
+    }
+    if (!hit && keyB) {                                     // 2) 접두어 떼고 일치
+      for (var j = 0; j < list.length; j++) {
+        if (upBase(list[j].name) === keyB) { hit = list[j]; break; }
+      }
+    }
+    // 못 찾으면 이 목록 페이지에 그대로 머무른다 (폴백)
+    if (!hit) { history.replaceState(null, '', location.pathname); return; }
+
+    // 용량 힌트가 있으면 해당 용량을 선택 상태로
+    var stHint = upNorm(q.get('st') || '');
+    if (stHint && hit.storages && hit.storages.length) {
+      for (var k = 0; k < hit.storages.length; k++) {
+        if (upNorm(hit.storages[k].label).indexOf(stHint.replace(/gb$|tb$/, '')) === 0) { hit.selectedStorage = k; break; }
+      }
+    }
+    try { sessionStorage.setItem('uplus_detail', JSON.stringify({ src: 'kidsphone-1', card: hit })); } catch (e) {}
+    location.replace('detail.html?src=' + 'kidsphone-1' + '&id=' + encodeURIComponent(hit.id));
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
+  else go();
+})();
+</script>
+<!-- ▲▲▲ ?open= 처리 ▲▲▲ -->
 </body></html>
