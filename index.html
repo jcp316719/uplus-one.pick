@@ -1227,6 +1227,7 @@ if(window.wcs) {
 <div class="edit-toolbar" id="editToolbar">
   <span id="toolbarLabel">✏️ 관리자 편집 모드</span>
   <button class="edit-toggle" id="editBtn" onclick="onEditBtnClick()" style="background: rgb(85, 85, 85);">편집 시작</button>
+  <button class="edit-toggle" id="syncBtn" onclick="syncMainSections(this)" style="background: rgb(15, 118, 110); display: none;">🔄 상품 페이지에서 메인 반영</button>
   <button class="edit-toggle" id="saveBtn" onclick="saveHTML()" style="background: rgb(26, 115, 232); display: none;">💾 파일 저장</button>
 </div>
 
@@ -1892,15 +1893,14 @@ const toastNames = [
   '김*준','이*현','박*서','최*민','정*윤','강*호','조*연','윤*진','장*혁','임*아',
   '한*수','오*경','신*우','권*나','황*찬','안*희','송*빈','류*원','전*석','홍*란'
 ];
+// 상품명은 삼성·아이폰 페이지의 카드 이름과 똑같이 맞춘다
 const toastPhones = [
-  // 아이폰 17 시리즈
-  '아이폰 17','아이폰 17 Plus','아이폰 17 Pro','아이폰 17 Pro Max',
-  // 갤럭시 S26 시리즈
-  '갤럭시 S26','갤럭시 S26+','갤럭시 S26 Ultra',
-  // 갤럭시 Z플립7
-  '갤럭시 Z플립7',
-  // 갤럭시 Z폴드7
-  '갤럭시 Z폴드7',
+  // 아이폰
+  '아이폰 17','아이폰 17 PRO','아이폰 17 PRO MAX','아이폰 17e','아이폰 Air',
+  // 갤럭시 S 시리즈
+  '갤럭시 S26','갤럭시 S26+','갤럭시 S26 Ultra','갤럭시 S25 Edge','갤럭시 버디5',
+  // 폴더블
+  'Z Flip8','Z Fold8','Z Fold8 Ultra',
   // 인터넷
   '인터넷','인터넷+IPTV'
 ];
@@ -2073,15 +2073,18 @@ function saveHTML() {
     const btn   = document.getElementById('editBtn');
     const label = document.getElementById('toolbarLabel');
     const saveBtn = document.getElementById('saveBtn');
+    const syncBtn = document.getElementById('syncBtn');
     if (editMode) {
       btn.textContent      = '✅ 편집 완료';
       btn.style.background = '#28a745';
       label.textContent    = '✏️ 편집 중 — 이미지를 클릭하여 교체';
       if (saveBtn) saveBtn.style.display = 'none';
+      if (syncBtn) syncBtn.style.display = 'inline-block';
     } else {
       btn.textContent      = '편집 시작';
       btn.style.background = '#555';
       if (saveBtn) saveBtn.style.display = 'inline-block';
+      if (syncBtn) syncBtn.style.display = 'inline-block';
       label.textContent    = '✏️ 관리자 편집 모드';
     }
     updateIconMoveButtons();
@@ -2674,6 +2677,13 @@ function saveHTML() {
     if (!el) return;
     if (e.target.closest(IGNORE)) return;
 
+    // 메인 반영으로 만들어진 카드는 상품 ID 를 직접 들고 있다 (이름 매칭 불필요)
+    var dSrc = el.getAttribute('data-src'), dId = el.getAttribute('data-id');
+    if (dSrc && dId) {
+      location.href = dSrc + '.html?open=' + encodeURIComponent('#' + dId);
+      return;
+    }
+
     var nameEl = el.querySelector('.promo-name');
     var raw = nameEl ? nameEl.textContent.trim() : '';
     if (!raw) return;
@@ -2692,4 +2702,179 @@ function saveHTML() {
 })();
 </script>
 <!-- ▲▲▲ 메인 프로모션 카드 연결 ▲▲▲ -->
+
+<!-- ▼▼▼ 상품 페이지 → 메인 섹션 자동 반영 ▼▼▼ -->
+<script data-main-sync="1">
+(function () {
+  var SOURCES = [
+    { key: 'samsung',     file: 'samsung.html' },
+    { key: 'apple',       file: 'apple.html' },
+    { key: 'kidsphone-1', file: 'kidsphone-1.html' }
+  ];
+  var SECTIONS = [
+    { badge: 'mainbest', track: 'promoTrack2', label: '유플원픽 인기상품', cls: 'pb-hot'   },
+    { badge: 'maindeal', track: 'promoTrack',  label: '유플원픽 특가상품', cls: 'pb-uplus' }
+  ];
+  var MAX = 4;
+  var THUMB = 340;   // 메인 카드용 사진 최대 크기
+
+  function extractCards(html) {
+    var s = html.indexOf('<script data-cards="1">');
+    if (s === -1) return [];
+    var open = html.indexOf('>', s) + 1;
+    var close = html.indexOf('<' + '/script>', open);
+    if (close === -1) return [];
+    var js = html.slice(open, close).trim()
+               .replace(/^window\.__savedCards\s*=\s*/, '').replace(/;\s*$/, '');
+    try { return JSON.parse(js); } catch (e) { return []; }
+  }
+
+  function colorImage(col) {
+    if (!col) return '';
+    if (col.image) return col.image;
+    if (col.images) {
+      var k = Object.keys(col.images);
+      for (var i = 0; i < k.length; i++) if (col.images[k[i]]) return col.images[k[i]];
+    }
+    return '';
+  }
+
+  // 메인용으로 사진을 줄인다 (원본 100~200KB → 20~40KB)
+  function shrink(dataUrl) {
+    return new Promise(function (res) {
+      if (!dataUrl) return res('');
+      var im = new Image();
+      im.onload = function () {
+        var w = im.width, h = im.height;
+        if (w > THUMB || h > THUMB) {
+          if (w > h) { h = Math.round(h * THUMB / w); w = THUMB; }
+          else { w = Math.round(w * THUMB / h); h = THUMB; }
+        }
+        var cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        var c = cv.getContext('2d');
+        c.fillStyle = '#ffffff'; c.fillRect(0, 0, w, h);
+        c.drawImage(im, 0, 0, w, h);
+        try { res(cv.toDataURL('image/jpeg', 0.86)); } catch (e) { res(dataUrl); }
+      };
+      im.onerror = function () { res(''); };
+      im.src = dataUrl;
+    });
+  }
+
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) {
+      return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c];
+    });
+  }
+
+  function cardHTML(item, sec, idx) {
+    var st = item.storage || {};
+    return '' +
+    '<div class="promo-card" data-src="' + esc(item.src) + '" data-id="' + esc(item.id) + '">' +
+      '<div class="promo-badge-row">' +
+        '<span class="promo-badge ' + sec.cls + ' editable" contenteditable="false">' + esc(sec.label) + '</span>' +
+      '</div>' +
+      '<div class="promo-img-area" onclick="triggerPromoImg(this,' + idx + ')">' +
+        (item.img
+          ? '<img class="uploaded" src="' + item.img + '" style="width:100%;height:100%;object-fit:contain;">'
+          : '') +
+        '<div class="promo-img-ph" style="display:' + (item.img ? 'none' : 'flex') + ';">📱</div>' +
+        '<input type="file" accept="image/*" style="display:none" onchange="replacePromoImg(this,' + idx + ')">' +
+      '</div>' +
+      '<div class="promo-info">' +
+        '<div class="promo-name editable" contenteditable="false">' + esc(item.name) +
+          (st.label ? ' (' + esc(st.label) + ')' : '') + '</div>' +
+        '<div class="promo-price-detail">' +
+          '<div class="promo-price-row"><span class="promo-price-label">출고가</span>' +
+            '<span class="promo-price-val editable" contenteditable="false">' + esc(st.price || '') + '</span></div>' +
+          '<div class="promo-price-row"><span class="promo-price-label">이동사지원금</span>' +
+            '<span class="promo-price-val discount editable" contenteditable="false">' + esc(st.subsidy || '') + '</span></div>' +
+          '<div class="promo-price-row"><span class="promo-price-label">U+ ' +
+            '<span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>' +
+            '<span class="promo-price-val discount editable" contenteditable="false">' + esc(st.oneDiscount || '') + '</span></div>' +
+          '<hr class="promo-divider">' +
+          '<div class="promo-price-row total-row"><span class="promo-price-label total-bold">할부원금</span>' +
+            '<span class="promo-price-val total-val editable" contenteditable="false">' + esc(st.installment || '') + '</span></div>' +
+        '</div>' +
+        '<div class="promo-plan-row"><span class="promo-plan-label">요금제 기준</span>' +
+          '<span class="promo-plan-tag editable" contenteditable="false">' + esc(item.plan || '데이터플랜 MAX') + '</span></div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  window.syncMainSections = function (btn) {
+    var label = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = '불러오는 중…'; }
+    var restore = function () { if (btn) { btn.disabled = false; btn.textContent = label; } };
+
+    Promise.all(SOURCES.map(function (src) {
+      return fetch(src.file).then(function (r) {
+        if (!r.ok) throw new Error(src.file + ' (' + r.status + ')');
+        return r.text();
+      }).then(function (t) {
+        return { key: src.key, cards: extractCards(t) };
+      });
+    })).then(function (all) {
+
+      // 같은 기종이 여러 페이지에 있으면 한 번만.
+      // 단, 메인 노출 배지가 켜진 쪽을 우선한다.
+      // (예: 아이폰 17 PRO 는 삼성·아이폰 양쪽에 있는데 배지는 아이폰 쪽에만 켜져 있다)
+      function hasMain(c) {
+        var b = c.badges || [];
+        return b.indexOf('mainbest') >= 0 || b.indexOf('maindeal') >= 0;
+      }
+      var pool = [];
+      var at = {};
+      all.forEach(function (s) {
+        s.cards.forEach(function (c) {
+          var key = String(c.name || '').replace(/\s+/g, '').toLowerCase();
+          if (!key) return;
+          var entry = {
+            src: s.key, id: c.id, name: c.name, plan: c.plan,
+            badges: c.badges || [],
+            storage: (c.storages || [])[c.selectedStorage || 0] || (c.storages || [])[0] || {},
+            rawImg: colorImage((c.colors || [])[c.selectedColor || 0] || (c.colors || [])[0])
+          };
+          if (at[key] === undefined) { at[key] = pool.length; pool.push(entry); return; }
+          var cur = pool[at[key]];
+          // 기존 것에 메인 배지가 없고 새 것에 있으면 교체
+          if (!hasMain(cur) && hasMain(entry)) pool[at[key]] = entry;
+        });
+      });
+
+      var jobs = [];
+      var report = [];
+      SECTIONS.forEach(function (sec) {
+        var picked = pool.filter(function (p) { return p.badges.indexOf(sec.badge) >= 0; }).slice(0, MAX);
+        report.push(sec.label + ' ' + picked.length + '개');
+        jobs.push(
+          Promise.all(picked.map(function (p) {
+            return shrink(p.rawImg).then(function (img) { p.img = img; return p; });
+          })).then(function (items) {
+            var track = document.getElementById(sec.track);
+            if (!track) return;
+            track.innerHTML = items.map(function (it, i) { return cardHTML(it, sec, i); }).join('');
+            return items.length;
+          })
+        );
+      });
+
+      return Promise.all(jobs).then(function () {
+        restore();
+        if (typeof initPromoSlider === 'function') { try { initPromoSlider(); } catch (e) {} }
+        alert('메인 반영 완료\n\n' + report.join('\n') +
+              '\n\n확인 후 [💾 파일 저장] 을 눌러 index.html 을 교체해 주세요.');
+      });
+
+    }).catch(function (e) {
+      restore();
+      alert('메인 반영 실패: ' + e.message +
+            '\n\n파일을 브라우저로 직접 열면 다른 파일을 읽지 못합니다.\n' +
+            '서버에 올린 주소(https://…)로 접속해서 실행해 주세요.');
+    });
+  };
+})();
+</script>
+<!-- ▲▲▲ 메인 섹션 자동 반영 ▲▲▲ -->
 </body></html>
