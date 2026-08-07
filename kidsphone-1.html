@@ -863,6 +863,8 @@ function replacePhoneImg(input, cardId, colorIdx, storageIdx) {
       canvas.getContext('2d').drawImage(original, 0, 0, w, h);
       const compressed = canvas.toDataURL('image/jpeg', 0.82);
       card.colors[colorIdx].image = compressed;
+      // images 에 이전 사진이 남아 있으면 상세페이지가 옛 사진을 보여준다. 함께 갱신한다.
+      card.colors[colorIdx].images = { '0': compressed };
       reRenderCard(card);
     };
     original.src = e.target.result;

@@ -571,9 +571,13 @@ function tint(hex){
   const rgb = hexToRgb(hex);
   if (!rgb) return 'hsl(220,6%,95%)';
   const hsl = rgbToHsl(rgb[0], rgb[1], rgb[2]);
-  const L = 0.885 + 0.055 * hsl[2];
+  /* 원래 밝기를 넓게 반영한다. 검정 계열은 80% 안팎, 흰 계열은 94% 안팎.
+     (이전에는 89~94% 로 뭉쳐서 검정과 흰색이 구분되지 않았다) */
+  const L = 0.80 + 0.145 * hsl[2];
   if (hsl[1] < 0.08) return 'hsl(220,7%,' + Math.round(L * 100) + '%)';
-  const S = Math.min(0.72, Math.max(0.34, hsl[1] * 1.2));
+  /* 채도는 최소값을 강제하지 않는다. 딥블루·바이올렛처럼 차분한 색이
+     실제보다 쨍하게 보이던 문제를 없앤다. */
+  const S = Math.min(0.72, Math.max(0.10, hsl[1] * 1.15));
   return 'hsl(' + Math.round(hsl[0]) + ',' + Math.round(S * 100) + '%,' + Math.round(L * 100) + '%)';
 }
 
@@ -620,12 +624,19 @@ function extractCards(html){
 /* ───── 카드 헬퍼 ───── */
 function curStorage(){ return (card.storages && card.storages[sel.storage]) || {}; }
 function curColor(){ return (card.colors && card.colors[sel.color]) || {}; }
+/* 목록 페이지(getColorImage)와 우선순위를 반드시 같게 유지할 것.
+   관리자 모드에서 사진을 바꾸면 image 가 갱신되고 images 에는 이전 사진이 남는다.
+   images 를 먼저 보면 목록에는 새 사진, 상세에는 옛 사진이 뜬다. */
 function colorImage(ci, si){
   const c = (card.colors || [])[ci];
   if (!c) return '';
+  if (c.image) return c.image;
   if (c.images && c.images[si]) return c.images[si];
-  if (c.images) { const k = Object.keys(c.images)[0]; if (k != null) return c.images[k]; }
-  return c.image || '';
+  if (c.images) {
+    const keys = Object.keys(c.images);
+    for (let i = 0; i < keys.length; i++) { if (c.images[keys[i]]) return c.images[keys[i]]; }
+  }
+  return '';
 }
 function upickOf(st, join){
   const alt = st.oneDiscountChange;
