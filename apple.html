@@ -1912,10 +1912,18 @@ function updateBadgeRow(cardId) {
 function reorderEventCards() {
   const list = document.getElementById('phoneList');
   if (!list) return;
-  const allCards = Array.from(list.querySelectorAll('.phone-card'));
   const addBtn = list.querySelector('.add-card-btn');
-  // soon-card 최우선, 그 다음 event-card, 나머지는 원래 순서 유지
-  const soonCards = allCards.filter(el => el.classList.contains('soon-card'));
+
+  // '원래 순서'는 화면 순서가 아니라 상품 데이터(cards) 순서다.
+  // 화면 순서를 기준으로 삼으면 한 번 앞으로 당겨진 카드가 배지를 꺼도 제자리로 못 돌아간다.
+  const order = {};
+  cards.forEach((c, i) => { order[c.id] = i; });
+  const rank = el => (order[el.id] !== undefined ? order[el.id] : 9999);
+
+  const allCards = Array.from(list.querySelectorAll('.phone-card')).sort((a, b) => rank(a) - rank(b));
+
+  // soon-card 최우선, 그 다음 event-card, 나머지는 데이터 순서대로
+  const soonCards  = allCards.filter(el => el.classList.contains('soon-card'));
   const eventCards = allCards.filter(el => el.classList.contains('event-card') && !el.classList.contains('soon-card'));
   const otherCards = allCards.filter(el => !el.classList.contains('event-card') && !el.classList.contains('soon-card'));
   [...soonCards, ...eventCards, ...otherCards].forEach(el => list.insertBefore(el, addBtn || null));
