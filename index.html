@@ -2348,6 +2348,34 @@ function saveHTML() {
     position:absolute; width:1px; height:1px; padding:0; margin:-1px;
     overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
   }
+
+/* ── 모바일 프로모션 카드 글자 정리 ──
+   카드가 화면의 46% 폭이라 좁다. 금액과 항목명이 글자 단위로 쪼개지지 않도록
+   줄바꿈을 막고 크기를 줄인다. */
+@media (max-width: 767px) {
+  .promo-info { padding: 8px 11px 13px !important; }
+  .promo-name {
+    font-size: 13.5px !important; line-height: 1.35 !important;
+    margin-bottom: 8px !important; word-break: keep-all;
+  }
+  .promo-price-row { padding: 3px 0 !important; gap: 4px; align-items: baseline; }
+  .promo-price-label {
+    font-size: 10px !important; white-space: nowrap !important; flex-shrink: 0;
+  }
+  /* U+ pick 배지 — 여백을 줄여 한 줄에 들어가게 */
+  .promo-price-label span {
+    padding: 1px 4px !important; font-size: 9px !important; border-radius: 8px !important;
+  }
+  .promo-price-val {
+    font-size: 11px !important; white-space: nowrap !important;
+    margin-left: auto; text-align: right;
+  }
+  .promo-price-row.total-row .total-bold { font-size: 11px !important; white-space: nowrap !important; }
+  .promo-price-row.total-row .total-val  { font-size: 13.5px !important; white-space: nowrap !important; }
+  .promo-plan-row { padding: 5px 8px !important; }
+  .promo-plan-label { font-size: 9.5px !important; }
+  .promo-plan-tag { font-size: 11.5px !important; }
+}
 </style>
 
 
