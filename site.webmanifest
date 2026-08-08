@@ -1,0 +1,20 @@
+{
+  "name": "U+ Pick 공식 대리점 온라인몰",
+  "short_name": "U+ Pick",
+  "icons": [
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#E6007E",
+  "background_color": "#ffffff",
+  "display": "browser",
+  "start_url": "/"
+}
