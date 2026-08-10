@@ -1273,7 +1273,7 @@ function wcsFire(){ if(window.wcs && window.wcs_do) wcs_do(); }
 <!-- 메인 배너 슬라이더 -->
 <div class="tv-slider-wrap" id="tvSlider">
 
-  <div class="tv-slider-track" id="tvTrack" style="transform: translateX(0%);">
+  <div class="tv-slider-track" id="tvTrack">
     <div class="tv-slide">
       <div class="img-wrap img-wrap-banner" data-label="배너 1 (PC)" data-label-mobile="배너 1 (모바일)">
         
@@ -1655,6 +1655,12 @@ function saveHTML() {
     var no = clone.querySelector('#npOverlay'); if (no) no.classList.remove('on');
     var ni = clone.querySelector('#npImg'); if (ni) ni.removeAttribute('src');
   } catch (e) {}
+  /* 배너 트랙: 저장 당시 보고 있던 위치가 굳어버리지 않게 인라인 transform 을 지운다.
+     (남아 있으면 모바일 첫 화면이 그 위치로 뜬다) */
+  try {
+    var tt = clone.querySelector('#tvTrack');
+    if (tt) { tt.style.removeProperty('transform'); if (!tt.getAttribute('style')) tt.removeAttribute('style'); }
+  } catch (e) {}
   clone.querySelector('body').classList.remove('edit-mode');
   clone.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('contenteditable', 'false'));
   // 편집 툴바 상태 초기화
@@ -1991,6 +1997,20 @@ function saveHTML() {
     tvStartAuto();
   }
   window.tvGo = tvGo;
+
+  /* 첫 화면에서도 위치를 한 번 잡아준다.
+     이게 없으면 transform 이 안 걸린 상태(0%)로 떠서, 모바일에서 1번 배너가
+     왼쪽 여백 없이 화면 끝에 붙어 보인다. (PC 는 0% 가 정상이라 표가 안 났음)
+     transition 을 잠시 꺼서 로딩 직후 스르륵 밀리는 것도 막는다. */
+  (function tvInitPos() {
+    var t = document.getElementById('tvTrack');
+    if (!t) return;
+    var keep = t.style.transition;
+    t.style.transition = 'none';
+    slideTo(0);
+    void t.offsetWidth;          /* 강제로 한 번 그리게 해서 transition 을 건너뛴다 */
+    t.style.transition = keep;
+  })();
 
   tvStartAuto();
 
@@ -2782,6 +2802,8 @@ function saveHTML() {
     overflow:hidden; padding:0;
   }
   .tv-slider-track { align-items:stretch; }
+  /* JS 가 돌기 전 첫 페인트부터 좌우 8% 여백을 잡아둔다 (모바일 전용) */
+  .tv-slider-track { transform: translateX(8%); }
   .tv-slide {
     min-width:84% !important; margin-right:2%;
     border-radius:18px; overflow:hidden;
