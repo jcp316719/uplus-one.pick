@@ -9,14 +9,15 @@
   gtag('config', 'G-N2EK5TNYDB');
 </script>
 <!-- Naver Analytics -->
-<script type="text/javascript" src="//wcs.pstatic.net/wcslog.js"></script><script type="text/javascript" async="" src="https://ssl.pstatic.net/melona/libs/gfp-nac-module/synchronizer.js"></script>
+<script type="text/javascript" async="" src="https://ssl.pstatic.net/melona/libs/gfp-nac-module/synchronizer.js"></script>
 <script type="text/javascript">
-if(!wcs_add) var wcs_add = {};
+/* 네이버 애널리틱스 — 설정을 먼저 잡아두고, 스크립트는 async로 나중에 불러온다.
+   (기존에는 //wcs.pstatic.net 이 렌더를 막아 첫 화면이 수 초간 하얗게 남았음) */
+if(!window.wcs_add) var wcs_add = {};
 wcs_add["wa"] = "17d9b701f9876b0";
-if(window.wcs) {
-  wcs_do();
-}
+function wcsFire(){ if(window.wcs && window.wcs_do) wcs_do(); }
 </script>
+<script type="text/javascript" async src="https://wcs.pstatic.net/wcslog.js" onload="wcsFire()"></script>
 <meta charset="UTF-8">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">

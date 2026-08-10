@@ -68,37 +68,30 @@
     }
   ];
 
-  /* 3곳을 "순차"가 아니라 "동시에" 물어본다.
-     순차로 하면 첫 곳이 느릴 때 그 시간만큼 화면이 계속 하얗게 남는다.
-     가장 먼저 답한 곳의 결과만 쓰고 나머지는 버린다. */
-  function askAll() {
-    var pending = PROVIDERS.length;
-    PROVIDERS.forEach(function (p) {
-      fetch(p.url, { cache: 'no-store' })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          if (settled) return;
-          var cc = p.getCountry(data);
-          if (!cc) { if (--pending <= 0) onLoaded(revealBody); return; }
-          if (cc.toUpperCase() !== ALLOWED_COUNTRY) showBlockScreen();
-          else onLoaded(revealBody);
-        })
-        .catch(function () {
-          // 모두 실패하면 막지 않고 통과 (fail-open)
-          if (--pending <= 0) onLoaded(revealBody);
-        });
-    });
+  function tryProvider(i) {
+    if (settled) return;
+    if (i >= PROVIDERS.length) {
+      // 모든 조회 실패: 접속을 막지 않고 통과 (fail-open)
+      onLoaded(revealBody);
+      return;
+    }
+    var p = PROVIDERS[i];
+    fetch(p.url, { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var cc = p.getCountry(data);
+        if (!cc) { tryProvider(i + 1); return; }
+        if (cc.toUpperCase() !== ALLOWED_COUNTRY) {
+          showBlockScreen();
+        } else {
+          onLoaded(revealBody);
+        }
+      })
+      .catch(function () { tryProvider(i + 1); });
   }
 
-  /* 내 PC에서 파일을 직접 열어 확인하는 경우(file://)는 국가 조회 자체가
-     불가능해 무의미하게 기다리게 되므로 건너뛴다. 실제 사이트에는 영향 없음. */
-  if (location.protocol === 'file:') {
-    revealBody();
-    return;
-  }
+  // 안전장치: 4초 안에 어떤 API도 응답하지 않으면 통과 (사이트가 계속 하얗게 남지 않도록)
+  setTimeout(function () { onLoaded(revealBody); }, 4000);
 
-  // 안전장치: 1.5초 안에 아무 곳도 답하지 않으면 통과 (화면이 계속 하얗게 남지 않도록)
-  setTimeout(function () { onLoaded(revealBody); }, 1500);
-
-  askAll();
+  tryProvider(0);
 })();
