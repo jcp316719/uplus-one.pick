@@ -25,6 +25,11 @@
     border-bottom:1px solid #eee;
     max-width:900px; margin:0 auto; box-sizing:border-box;
   }
+  /* ── 홈으로 가는 로고 버튼 (모든 서브페이지 공통) ── */
+  .home-logo { margin-left:auto; display:flex; align-items:center; line-height:0; flex-shrink:0; -webkit-tap-highlight-color:transparent; }
+  .home-logo img { height:26px; width:auto; display:block; }
+  .home-logo:active img { opacity:.55; }
+  @media (max-width:767px) { .home-logo img { height:23px; } }
   .back-btn { background:none; border:none; cursor:pointer; font-size:22px; color:#111; padding:0; line-height:1; }
   .top-header-title { font-size:17px; font-weight:800; color:#111; }
   h1.top-header-title { margin:0; font-weight:800; }
@@ -56,6 +61,7 @@
 <div class="top-header">
   <button class="back-btn" onclick="history.back()">←</button>
   <h1 class="top-header-title">이용약관</h1>
+  <a href="index.html" class="home-logo" aria-label="U+ Pick 홈으로"><img src="logo.png" alt="U+ Pick" width="342" height="112" decoding="async"></a>
 </div>
 
 <div class="doc-wrap">

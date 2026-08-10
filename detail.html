@@ -1358,10 +1358,16 @@ document.addEventListener('keydown', function(e){
   if (keyBuffer === SECRET_KEY) { keyBuffer = ''; openPwModal(); }
 });
 
+/* 로고: 한 번 누르면 첫 화면(index)으로, 빠르게 5번 누르면 관리자 진입.
+   두 기능이 같은 자리에 있어서, 이동을 아주 잠깐 미뤄두고
+   그 사이에 다음 탭이 들어오면 이동을 취소하는 방식으로 구분한다. */
+var _logoNavTimer = null;
 function logoTap(){
   tapCount++; clearTimeout(tapTimer);
   tapTimer = setTimeout(() => tapCount = 0, 1500);
-  if (tapCount >= 5) { tapCount = 0; openPwModal(); }
+  clearTimeout(_logoNavTimer);
+  if (tapCount >= 5) { tapCount = 0; openPwModal(); return; }
+  _logoNavTimer = setTimeout(function () { location.href = 'index.html'; }, 250);
 }
 function openPwModal(){
   document.getElementById('pwInput').value = '';
