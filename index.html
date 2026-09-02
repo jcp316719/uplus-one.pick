@@ -2615,7 +2615,10 @@ function saveHTML() {
     var restore = function () { if (btn) { btn.disabled = false; btn.textContent = label; } };
 
     Promise.all(SOURCES.map(function (src) {
-      return fetch(src.file).then(function (r) {
+      /* 캐시를 반드시 건너뛴다.
+         그냥 fetch 하면 브라우저가 교체 전 옛날 파일을 그대로 내줘서,
+         상품 페이지에서 배지를 껐는데도 계속 딸려오는 일이 생긴다. */
+      return fetch(src.file + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) {
         if (!r.ok) throw new Error(src.file + ' (' + r.status + ')');
         return r.text();
       }).then(function (t) {
@@ -2652,8 +2655,15 @@ function saveHTML() {
       var jobs = [];
       var report = [];
       SECTIONS.forEach(function (sec) {
-        var picked = pool.filter(function (p) { return p.badges.indexOf(sec.badge) >= 0; }).slice(0, MAX);
-        report.push(sec.label + ' ' + picked.length + '개');
+        var all4 = pool.filter(function (p) { return p.badges.indexOf(sec.badge) >= 0; });
+        var picked = all4.slice(0, MAX);
+        /* 어떤 카드가 들어갔는지 이름까지 보여준다. 배지를 잘못 켠 걸 바로 알 수 있다. */
+        report.push(sec.label + ' ' + picked.length + '개\n   · ' +
+          picked.map(function (p) { return p.name; }).join('\n   · ') +
+          (all4.length > MAX
+            ? '\n   ⚠ 배지가 ' + all4.length + '개 켜져 있어 뒤 ' + (all4.length - MAX) + '개는 빠졌습니다: ' +
+              all4.slice(MAX).map(function (p) { return p.name; }).join(', ')
+            : ''));
         jobs.push(
           Promise.all(picked.map(function (p) {
             return shrink(p.rawImg).then(function (img) { p.img = img; return p; });
