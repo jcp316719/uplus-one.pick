@@ -352,6 +352,54 @@ window.__reviews = {
     background:#FFF1F1; color:#B3151E; border:1.5px solid #F3C9CC; border-radius:11px;
     padding:13px; text-align:center; font-weight:800; font-size:13.5px; margin-top:15px;
   }
+  /* ── 영업시간 외 안내 + 상담 예약 ── */
+  .offhour {
+    background:#f6f6f8; border-radius:11px; padding:12px 13px; margin-top:15px; text-align:left;
+  }
+  .offhour-t { font-size:13px; font-weight:800; color:#33333c; }
+  .offhour-s { font-size:11.5px; color:#7a7a86; line-height:1.6; margin-top:4px; font-weight:600; }
+  .btn-book { background:#1c1c22 !important; }
+  .btn-book:hover { background:#000 !important; }
+
+  .bk-box { width:330px; max-width:calc(100vw - 36px); text-align:center; }
+  .bk-box h3 { font-size:16px; font-weight:800; color:#111; margin-bottom:6px; }
+  .bk-box p { font-size:12px; color:#9a9a9a; line-height:1.6; margin-bottom:16px; }
+  .bk-sum {
+    background:#faf7fb; border:1px solid #f0e6f2; border-radius:10px;
+    padding:11px 12px; margin-bottom:12px; text-align:left;
+  }
+  .bk-sum-l { display:block; font-size:10.5px; color:#B3005F; letter-spacing:0.03em; margin-bottom:5px; font-weight:700; }
+  #bookSum { font-size:11.5px; color:#444; line-height:1.7; font-weight:600; }
+  #bookSum b { font-weight:800; color:#111; }
+  .bk-box input[type=text], .bk-box input[type=tel] {
+    width:100%; background:#f7f7f8; border:1px solid transparent; border-radius:11px;
+    padding:13px 14px; font-size:14px; font-family:inherit; color:#111;
+    margin-bottom:8px; outline:none; transition:background .15s, border-color .15s;
+  }
+  .bk-box input[type=text]:focus, .bk-box input[type=tel]:focus { background:#fff; border-color:#111; }
+  .bk-box input.err { background:#fff; border-color:#ff3b3b; }
+  .bk-agree {
+    display:flex; align-items:center; gap:7px; margin:10px 0 6px;
+    font-size:12px; color:#666; cursor:pointer; text-align:left;
+  }
+  .bk-agree input { width:15px; height:15px; accent-color:#E6007E; flex-shrink:0; }
+  .bk-detail { font-size:10.5px; color:#a8a8b0; line-height:1.6; text-align:left; margin-bottom:8px; }
+  .bk-detail a { color:#E6007E; text-decoration:underline; }
+  .bk-row { display:flex; gap:8px; margin-top:6px; }
+  .bk-cancel, .bk-submit {
+    border-radius:12px; padding:14px 0; font-size:14px; font-weight:700;
+    cursor:pointer; font-family:inherit; border:none;
+  }
+  .bk-cancel { flex:1; background:#fff; border:1px solid #e4e4e4; color:#888; }
+  .bk-submit { flex:1.6; background:#E6007E; color:#fff; }
+  .bk-submit:disabled { background:#f0a6cd; cursor:default; }
+  .book-ok { font-size:38px; margin-bottom:10px; }
+  .pw-ok {
+    width:100%; margin-top:14px; padding:14px; border:none; border-radius:12px;
+    background:#E6007E; color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  body.modal-open { overflow:hidden; }
+
   /* ── 개통 후기 (견적과 상담 버튼 사이) ── */
   .rv-wrap { margin-top:20px; padding-top:18px; border-top:1px solid #ececed; }
   .rv-head { display:flex; align-items:center; gap:8px; margin-bottom:11px; }
@@ -590,6 +638,29 @@ window.__reviews = {
   </div>
 </div>
 
+<!-- 상담 예약 (영업시간 외에만 열린다) -->
+<div class="pw-overlay bk-overlay" id="bookOverlay" onclick="if(event.target===this)closeBookModal()">
+  <div class="pw-box bk-box">
+    <h3>상담 예약</h3>
+    <p>영업 시작 시간에 맞춰<br>가장 먼저 연락드릴게요</p>
+    <div class="bk-sum"><span class="bk-sum-l">선택하신 조건</span><div id="bookSum"></div></div>
+    <input type="text" id="bookName" placeholder="이름" maxlength="20" oninput="document.getElementById('bookErr').textContent=''">
+    <input type="tel" id="bookPhone" placeholder="연락처 (예: 010-1234-5678)" maxlength="13" inputmode="numeric" oninput="bookPhoneInput(this)">
+    <input type="text" id="bookTrap" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;">
+    <label class="bk-agree">
+      <input type="checkbox" id="bookAgree">
+      <span>[필수] 개인정보 수집·이용 동의</span>
+    </label>
+    <div class="bk-detail">수집 항목: 이름, 연락처 · 목적: 상담 연락 · 보유 기간: 상담 완료 후 6개월<br>
+      자세한 내용은 <a href="privacy.html" target="_blank">개인정보처리방침</a>을 참고해 주세요.</div>
+    <div class="err" id="bookErr"></div>
+    <div class="bk-row">
+      <button class="bk-cancel" onclick="closeBookModal()">취소</button>
+      <button class="bk-submit" id="bookSubmit" onclick="submitBook()">예약하기</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ══════════════════════════════════════════════════════════════════
    U+ Pick 상품 상세 — 영수증형 계산기 + 할인방식 비교
@@ -602,6 +673,28 @@ const KAKAO_URL = 'https://pf.kakao.com/_xdxaxlxfX/chat';
 const TEL = '0505-674-5986';
 const APR = 0.059;
 const CONTRACT_RATE = 0.25;
+
+/* ── 상담 가능 시간 (연중무휴 10:00 ~ 20:00) ──
+   이 시간이 지나면 카톡·전화 대신 '상담 예약' 폼이 뜬다.
+   시간은 방문자 기기 설정이 아니라 한국 시각으로 직접 계산한다. */
+const BIZ_OPEN = 10;
+const BIZ_CLOSE = 20;
+/* 사전예약 신청과 같은 곳으로 보낸다 (구글 시트 + 메일 + 관리자 알림톡) */
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz81emfBNw6QzCFaSp_GMNhsOc2U2mvfvxiTZeO6yZd1_TSgSD9myA2k1g6pf4ktIUHPw/exec';
+
+function seoulHour() {
+  try {
+    return Number(new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Seoul', hour: 'numeric', hour12: false
+    }).format(new Date()));
+  } catch (e) {
+    return new Date().getHours();   // 아주 오래된 브라우저 대비
+  }
+}
+function isBizOpen() {
+  const h = seoulHour();
+  return h >= BIZ_OPEN && h < BIZ_CLOSE;
+}
 
 let card = null, srcKey = '', allCards = [];
 let plans = (window.__plans && window.__plans.length) ? window.__plans
@@ -1019,12 +1112,28 @@ function paintReceipt(){
 
   h += reviewsHTML();
 
-  h += '<button class="btn-apply btn-kakao-main" onclick="kakaoConsult()">💬 카카오톡으로 상담하기</button>' +
-    '<div class="btn-hint">선택하신 조건이 <b>자동 복사</b>됩니다.<br class="hint-br">채팅창에 <b>붙여넣기</b>만 하면 끝</div>' +
-    '<div class="btn-pair">' +
-      '<button class="btn-sub" id="btnSave" onclick="saveEstimate(this)">📷 ' + shareLabel() + '</button>' +
-      '<a class="btn-tel" href="tel:' + TEL + '">📞 전화상담</a>' +
-    '</div></div>';
+  if (isBizOpen()) {
+    h += '<button class="btn-apply btn-kakao-main" onclick="kakaoConsult()">💬 카카오톡으로 상담하기</button>' +
+      '<div class="btn-hint">선택하신 조건이 <b>자동 복사</b>됩니다.<br class="hint-br">채팅창에 <b>붙여넣기</b>만 하면 끝</div>' +
+      '<div class="btn-pair">' +
+        '<button class="btn-sub" id="btnSave" onclick="saveEstimate(this)">📷 ' + shareLabel() + '</button>' +
+        '<a class="btn-tel" href="tel:' + TEL + '">📞 전화상담</a>' +
+      '</div>';
+  } else {
+    /* 상담 시간이 지난 뒤 들어온 손님. 전화는 못 받고 카톡 답장도 아침에나 가므로
+       그냥 나가버리기 쉽다. 연락처만 남기게 해서 다음 날 먼저 연락드린다. */
+    h += '<div class="offhour">' +
+           '<div class="offhour-t">🌙 지금은 상담 시간이 아닙니다</div>' +
+           '<div class="offhour-s">연락처를 남겨주시면 ' + BIZ_OPEN + '시 영업 시작과 함께 가장 먼저 연락드릴게요</div>' +
+         '</div>' +
+         '<button class="btn-apply btn-book" onclick="openBookModal()">상담 예약하기</button>' +
+         '<div class="btn-hint">선택하신 조건이 <b>그대로 전달</b>됩니다.<br class="hint-br">다시 설명하지 않으셔도 됩니다</div>' +
+         '<div class="btn-pair">' +
+           '<button class="btn-sub" onclick="kakaoConsult()">💬 카톡 남기기</button>' +
+           '<button class="btn-sub" id="btnSave" onclick="saveEstimate(this)">📷 ' + shareLabel() + '</button>' +
+         '</div>';
+  }
+  h += '</div>';
 
   document.getElementById('colRcp').innerHTML = h;
   animateTo(s.monthlyTotal);
@@ -1086,6 +1195,99 @@ function reviewsHTML() {
              '<span class="rv-sub">실제 상담 사례</span>' + nav + '</div>' +
            '<div class="rv-track" id="rvTrack">' + cards + '</div>' +
          '</div>';
+}
+
+/* ══════════ 상담 예약 (영업시간 외) ══════════ */
+
+/* 지금 화면에 잡혀 있는 조건을 한 줄로 만든다. 상담 시 그대로 쓰인다. */
+function bookSummary() {
+  const s = compute();
+  const st = curStorage() || {};
+  const col = (card && card.colors) ? card.colors[sel.color] : null;
+  const parts = [
+    card ? card.name : '',
+    st.label || '',
+    col ? col.name : '',
+    sel.join === 'change' ? '기기변경' : '번호이동',
+    (avail[sel.plan] || {}).name || '',
+    sel.discount === 'contract' ? '선택약정' : '이통사지원금',
+    sel.months ? sel.months + '개월' : '일시불'
+  ].filter(Boolean);
+  return { text: parts.join(' · '), monthly: s ? s.monthlyTotal : 0 };
+}
+
+function openBookModal() {
+  const b = bookSummary();
+  document.getElementById('bookSum').innerHTML =
+    esc(b.text).replace(/ · /g, ' · ') +
+    (b.monthly ? '<br><b>월 ' + fmt(b.monthly) + '</b>' : '');   /* fmt 가 '원'까지 붙인다 */
+  document.getElementById('bookErr').textContent = '';
+  ['bookName', 'bookPhone'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = ''; el.classList.remove('err');
+  });
+  document.getElementById('bookAgree').checked = false;
+  document.getElementById('bookOverlay').classList.add('show');
+  document.body.classList.add('modal-open');
+  setTimeout(() => document.getElementById('bookName').focus(), 100);
+}
+
+function closeBookModal() {
+  document.getElementById('bookOverlay').classList.remove('show');
+  document.body.classList.remove('modal-open');
+}
+
+function bookPhoneInput(el) {
+  let v = el.value.replace(/[^0-9]/g, '').slice(0, 11);
+  if (v.length >= 7) v = v.slice(0, 3) + '-' + v.slice(3, v.length === 10 ? 6 : 7) + '-' + v.slice(v.length === 10 ? 6 : 7);
+  else if (v.length >= 4) v = v.slice(0, 3) + '-' + v.slice(3);
+  el.value = v;
+  document.getElementById('bookErr').textContent = '';
+}
+
+function submitBook() {
+  const nameEl = document.getElementById('bookName');
+  const phoneEl = document.getElementById('bookPhone');
+  const errEl = document.getElementById('bookErr');
+  const name = nameEl.value.trim();
+  const phone = phoneEl.value.trim();
+
+  if (document.getElementById('bookTrap').value) return;   // 스팸 봇 차단
+
+  if (!name) { errEl.textContent = '이름을 입력해주세요'; nameEl.classList.add('err'); nameEl.focus(); return; }
+  if (!/^01[016789]-?\d{3,4}-?\d{4}$/.test(phone.replace(/\s/g, ''))) {
+    errEl.textContent = '연락처를 정확히 입력해주세요'; phoneEl.classList.add('err'); phoneEl.focus(); return;
+  }
+  if (!document.getElementById('bookAgree').checked) {
+    errEl.textContent = '개인정보 수집·이용에 동의해주세요'; return;
+  }
+
+  const b = bookSummary();
+  const btn = document.getElementById('bookSubmit');
+  btn.disabled = true; btn.textContent = '전송 중…';
+
+  fetch(GAS_WEB_APP_URL, {
+    method: 'post', mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      kind: 'consult',                 // 사전예약과 구분. 고객 알림톡은 보내지 않는다.
+      name: name,
+      phone: phone,
+      product: '[상담예약] ' + b.text + (b.monthly ? ' · 월 ' + fmt(b.monthly) : ''),
+      page: location.href,
+      time: new Date().toString(),
+      consent: true,
+      consentTime: new Date().toString()
+    })
+  }).then(bookDone).catch(bookDone);
+}
+
+function bookDone() {
+  document.querySelector('#bookOverlay .pw-box').innerHTML =
+    '<div class="book-ok">✅</div>' +
+    '<h3>예약이 접수되었습니다</h3>' +
+    '<p>' + BIZ_OPEN + '시 영업 시작과 함께<br>남겨주신 번호로 연락드리겠습니다.</p>' +
+    '<button class="pw-ok" onclick="closeBookModal()">확인</button>';
 }
 
 /* 카드 한 장씩 넘긴다. 모바일은 손가락으로도 넘어간다. */
