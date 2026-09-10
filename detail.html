@@ -354,18 +354,32 @@ window.__reviews = {
   }
   /* ── 개통 후기 (견적과 상담 버튼 사이) ── */
   .rv-wrap { margin-top:20px; padding-top:18px; border-top:1px solid #ececed; }
-  .rv-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:11px; }
+  .rv-head { display:flex; align-items:center; gap:8px; margin-bottom:11px; }
   .rv-title { font-size:15px; font-weight:800; color:#111; letter-spacing:-0.2px; }
-  .rv-sub { font-size:11px; color:#a8a8b0; font-weight:600; }
-  /* 가로로 넘겨 본다. 후기가 늘어나도 페이지가 길어지지 않는다. */
+  .rv-sub { font-size:11px; color:#a8a8b0; font-weight:600; margin-right:auto; }
+  .rv-nav { display:flex; gap:4px; flex-shrink:0; }
+  .rv-arrow {
+    width:26px; height:26px; border:1px solid #e4e4e6; background:#fff; border-radius:50%;
+    color:#555; font-size:15px; line-height:1; cursor:pointer; font-family:inherit;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .rv-arrow:hover { border-color:#bbb; color:#111; background:#fafafa; }
+  .rv-arrow:active { background:#f0f0f0; }
+  /* 가로로 넘겨 본다. 후기가 늘어나도 페이지가 길어지지 않는다.
+     카드 한 장이 거의 폭을 다 쓰고 다음 장이 살짝만 보이게 해서,
+     잘린 게 아니라 더 있다는 신호로 읽히게 한다. */
   .rv-track {
     display:flex; gap:9px; overflow-x:auto; scroll-snap-type:x mandatory;
-    -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    padding-bottom:2px; scroll-padding-left:0;
   }
   .rv-track::-webkit-scrollbar { display:none; }
   .rv-card {
-    flex:0 0 210px; scroll-snap-align:start;
+    flex:0 0 calc(100% - 34px); scroll-snap-align:start;
     border:1px solid #ededed; border-radius:13px; padding:14px; background:#fff;
+  }
+  @media (min-width:900px) {
+    .rv-card { flex-basis:calc(50% - 21px); }   /* PC 는 두 장씩 */
   }
   .rv-top { display:flex; align-items:center; gap:6px; margin-bottom:9px; }
   .rv-join { font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; }
@@ -1058,10 +1072,29 @@ function reviewsHTML() {
            '</div>';
   }).join('');
 
+  /* 후기가 2개 이상일 때만 넘김 버튼을 단다.
+     PC 는 스크롤바를 숨겨놔서 버튼이 없으면 넘길 방법이 아예 없다. */
+  var nav = scored.length > 1
+    ? '<div class="rv-nav">' +
+        '<button type="button" class="rv-arrow" onclick="rvScroll(-1)" aria-label="이전 후기">‹</button>' +
+        '<button type="button" class="rv-arrow" onclick="rvScroll(1)" aria-label="다음 후기">›</button>' +
+      '</div>'
+    : '';
+
   return '<div class="rv-wrap">' +
-           '<div class="rv-head"><span class="rv-title">개통 후기</span><span class="rv-sub">실제 상담 사례</span></div>' +
-           '<div class="rv-track">' + cards + '</div>' +
+           '<div class="rv-head"><span class="rv-title">개통 후기</span>' +
+             '<span class="rv-sub">실제 상담 사례</span>' + nav + '</div>' +
+           '<div class="rv-track" id="rvTrack">' + cards + '</div>' +
          '</div>';
+}
+
+/* 카드 한 장씩 넘긴다. 모바일은 손가락으로도 넘어간다. */
+function rvScroll(dir) {
+  var t = document.getElementById('rvTrack');
+  if (!t) return;
+  var first = t.querySelector('.rv-card');
+  var step = first ? first.getBoundingClientRect().width + 9 : t.clientWidth;
+  t.scrollBy({ left: dir * step, behavior: 'smooth' });
 }
 
 /* 이름 가운데를 가린다. 홍길동 → 홍O동, 김철 → 김O */
