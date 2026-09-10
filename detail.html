@@ -64,6 +64,30 @@ window.__combo = {
   "suffix": "추가지원금!",
   "off": false
 };
+
+/* ── 개통 후기 ──
+   목록은 여기 한 곳에만 있고, 모든 기기 상세페이지에 공통으로 나온다.
+   기기를 새로 추가해도 따로 손댈 것이 없다.
+   지금 보고 있는 기기·가입유형과 맞는 후기가 앞으로 정렬된다.
+
+   join : 'move'(번호이동) | 'change'(기기변경) | '' (표시 안 함)
+   off  : true 로 두면 그 후기만 숨긴다.
+
+   ⚠️ 반드시 실제로 받은 내용만 넣어 주세요.
+      지어낸 후기를 올리면 표시광고법 위반이 됩니다. */
+window.__reviews = {
+  "off": false,
+  "list": [
+    { "join": "move",   "device": "Z Fold8",   "date": "2026.07", "name": "김O민", "text": "타사 사용 중이었는데 위약금까지 계산해 비교해주셔서 안심하고 폴드8로 바꿨어요." },
+    { "join": "move",   "device": "",          "date": "2026.07", "name": "한O일", "text": "SKT에서 넘어왔는데 받을 수 있는 혜택을 시원시원하게 설명해주셔서 만족했습니다." },
+    { "join": "change", "device": "",          "date": "2026.08", "name": "최O기", "text": "기기변경인데도 할인 혜택을 많이 받았어요. 요금제 상담도 꼼꼼해서 좋았습니다." },
+    { "join": "change", "device": "",          "date": "2026.07", "name": "전O민", "text": "매장 방문할 시간이 없었는데 카톡으로 상담부터 개통까지 편하게 진행했어요." },
+    { "join": "change", "device": "",          "date": "2026.08", "name": "박O은", "text": "여러 곳 비교해보고 왔는데 여기가 가장 저렴했어요. 조건도 솔직하게 안내해주셨습니다." },
+    { "join": "change", "device": "",          "date": "2026.06", "name": "안O림", "text": "홈페이지에서 본 금액과 실제 개통 금액이 같았어요. 추가 비용 없이 깔끔했습니다." },
+    { "join": "change", "device": "키즈폰",    "date": "2026.09", "name": "김O호", "text": "아이 첫 휴대폰이라 고민했는데 요금제부터 필요한 기능까지 자세히 알려주셔서 좋았어요." },
+    { "join": "new",    "device": "인터넷+TV", "date": "2026.09", "name": "강O민", "text": "인터넷과 휴대폰 결합 혜택을 표로 비교해주셔서 할인 내용도 쉽게 이해할 수 있었습니다." }
+  ]
+};
 </script>
 
 <style>
@@ -328,6 +352,33 @@ window.__combo = {
     background:#FFF1F1; color:#B3151E; border:1.5px solid #F3C9CC; border-radius:11px;
     padding:13px; text-align:center; font-weight:800; font-size:13.5px; margin-top:15px;
   }
+  /* ── 개통 후기 (견적과 상담 버튼 사이) ── */
+  .rv-wrap { margin-top:20px; padding-top:18px; border-top:1px solid #ececed; }
+  .rv-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:11px; }
+  .rv-title { font-size:15px; font-weight:800; color:#111; letter-spacing:-0.2px; }
+  .rv-sub { font-size:11px; color:#a8a8b0; font-weight:600; }
+  /* 가로로 넘겨 본다. 후기가 늘어나도 페이지가 길어지지 않는다. */
+  .rv-track {
+    display:flex; gap:9px; overflow-x:auto; scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px;
+  }
+  .rv-track::-webkit-scrollbar { display:none; }
+  .rv-card {
+    flex:0 0 210px; scroll-snap-align:start;
+    border:1px solid #ededed; border-radius:13px; padding:14px; background:#fff;
+  }
+  .rv-top { display:flex; align-items:center; gap:6px; margin-bottom:9px; }
+  .rv-join { font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; }
+  .rv-move { color:#B3005F; background:#FDF0F7; }
+  .rv-change { color:#4A3A9E; background:#F2F0FB; }
+  .rv-new { color:#0F6E56; background:#E7F5F0; }
+  .rv-dev { font-size:11px; color:#a8a8b0; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rv-text { font-size:12.5px; line-height:1.65; color:#33333c; margin:0 0 11px; font-weight:500; }
+  .rv-foot {
+    display:flex; justify-content:space-between; font-size:11px; color:#a8a8b0;
+    border-top:1px solid #f4f4f4; padding-top:9px; font-weight:600;
+  }
+
   .btn-apply {
     display:flex; align-items:center; justify-content:center; gap:7px;
     width:100%; margin-top:15px; padding:16px;
@@ -952,6 +1003,8 @@ function paintReceipt(){
 
   if (isSoldOut()) h += '<div class="rcp-soldout">재고 소진 — 입고 문의 바랍니다</div>';
 
+  h += reviewsHTML();
+
   h += '<button class="btn-apply btn-kakao-main" onclick="kakaoConsult()">💬 카카오톡으로 상담하기</button>' +
     '<div class="btn-hint">선택하신 조건이 <b>자동 복사</b>됩니다.<br class="hint-br">채팅창에 <b>붙여넣기</b>만 하면 끝</div>' +
     '<div class="btn-pair">' +
@@ -963,6 +1016,61 @@ function paintReceipt(){
   animateTo(s.monthlyTotal);
   if (editMode) applyEditable(true);
   watchMainBtn();
+}
+
+/* ── 개통 후기 ──
+   목록은 window.__reviews 한 곳에만 있고 모든 기기가 공유한다.
+   지금 보고 있는 기기와 같은 사례, 그다음 같은 가입유형 사례를 앞으로 보낸다.
+   후기를 더 쓰지 않아도 보는 사람마다 순서가 달라진다. */
+function reviewList() {
+  var r = window.__reviews;
+  if (!r || r.off || !Array.isArray(r.list)) return [];
+  return r.list.filter(function (x) { return x && !x.off && String(x.text || '').trim(); });
+}
+
+function reviewsHTML() {
+  var list = reviewList();
+  if (!list.length) return '';
+
+  var curDev = (card && card.name ? String(card.name) : '').replace(/\s+/g, '').toLowerCase();
+  var curJoin = sel.join === 'change' ? 'change' : 'move';
+
+  /* 점수가 높은 것부터. 같은 점수면 원래 순서를 지킨다. */
+  var scored = list.map(function (x, i) {
+    var dev = String(x.device || '').replace(/\s+/g, '').toLowerCase();
+    var s = 0;
+    if (dev && curDev && (dev === curDev || dev.indexOf(curDev) > -1 || curDev.indexOf(dev) > -1)) s += 2;
+    if (x.join && x.join === curJoin) s += 1;
+    return { x: x, s: s, i: i };
+  }).sort(function (a, b) { return b.s - a.s || a.i - b.i; });
+
+  /* 상세페이지 선택지에는 없지만 후기에는 신규가입 사례도 들어간다. */
+  var JOIN_LABEL = { move: '번호이동', change: '기기변경', 'new': '신규가입' };
+  var cards = scored.map(function (o) {
+    var x = o.x;
+    var badge = x.join && JOIN_LABEL[x.join]
+      ? '<span class="rv-join rv-' + x.join + '">' + esc(JOIN_LABEL[x.join]) + '</span>' : '';
+    var dev = x.device ? '<span class="rv-dev">' + esc(x.device) + '</span>' : '';
+    return '<div class="rv-card">' +
+             '<div class="rv-top">' + badge + dev + '</div>' +
+             '<p class="rv-text">' + esc(x.text) + '</p>' +
+             '<div class="rv-foot"><span>' + esc(maskName(x.name)) + '</span><span>' + esc(x.date || '') + '</span></div>' +
+           '</div>';
+  }).join('');
+
+  return '<div class="rv-wrap">' +
+           '<div class="rv-head"><span class="rv-title">개통 후기</span><span class="rv-sub">실제 상담 사례</span></div>' +
+           '<div class="rv-track">' + cards + '</div>' +
+         '</div>';
+}
+
+/* 이름 가운데를 가린다. 홍길동 → 홍O동, 김철 → 김O */
+function maskName(n) {
+  var s = String(n || '').trim();
+  if (!s) return '';
+  if (s.length === 1) return s + '님';
+  if (s.length === 2) return s[0] + 'O님';
+  return s[0] + 'O'.repeat(s.length - 2) + s[s.length - 1] + '님';
 }
 
 /* 영수증의 카톡 버튼이 보이면 하단 고정바를 숨긴다 (중복 제거)
@@ -1507,11 +1615,14 @@ function savePlansHTML(){
     // 요금제·배너 데이터 갱신
     const ds = clone.querySelector('script[data-plans="1"]');
     if (!ds) throw new Error('요금제 블록을 찾지 못했습니다');
+    /* 후기도 이 블록에 들어 있으므로 반드시 함께 다시 써야 한다.
+       빠뜨리면 요금제를 저장할 때마다 후기가 통째로 사라진다. */
     ds.textContent = '\nwindow.__plans = ' + JSON.stringify(plans, null, 2) + ';\n' +
-                     (combo ? 'window.__combo = ' + JSON.stringify(combo, null, 2) + ';\n' : '');
+                     (combo ? 'window.__combo = ' + JSON.stringify(combo, null, 2) + ';\n' : '') +
+                     (window.__reviews ? 'window.__reviews = ' + JSON.stringify(window.__reviews, null, 2) + ';\n' : '');
 
     download('<!DOCTYPE html>\n' + clone.outerHTML, 'detail.html');
-    alert('요금제·결합배너가 저장되었습니다.\n다운로드된 detail.html 을 교체해 주세요.');
+    alert('요금제·결합배너·후기가 저장되었습니다.\n다운로드된 detail.html 을 교체해 주세요.');
   } catch (e) {
     alert('저장 실패: ' + e.message);
   }
