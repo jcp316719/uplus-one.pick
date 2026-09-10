@@ -274,20 +274,60 @@
   .detail-models-hint { font-size:11.5px; color:#999; line-height:1.6; }
   .detail-models-hint b { color:#E6007E; }
 
-  /* 신청폼 — 용량 / 색상 고르기 */
-  .notify-opt-label { font-size:11.5px; font-weight:700; color:#666; text-align:left; margin:12px 2px 6px; }
-  .notify-chips { display:flex; flex-wrap:wrap; gap:6px; }
-  .notify-chips.error .notify-chip { border-color:#e74c3c; }
-  .notify-chip {
-    flex:1 1 auto; min-width:62px; display:inline-flex; align-items:center; justify-content:center; gap:5px;
-    padding:9px 11px; background:#fff; border:1px solid #e2e2e2; border-radius:8px;
-    font-family:inherit; font-size:12.5px; font-weight:600; color:#555; cursor:pointer;
-    transition:border-color .12s, background .12s, color .12s; -webkit-tap-highlight-color:transparent;
+  /* ── 사전예약 신청폼 전용 스타일 ──
+     비밀번호 모달과 같은 클래스를 쓰므로 #notifyOverlay 안으로만 한정한다. */
+  #notifyOverlay .pw-modal {
+    border-radius:20px; padding:30px 24px 24px;
+    width:330px; max-width:calc(100vw - 36px);   /* 작은 휴대폰에서 넘치지 않게 */
   }
-  .notify-chip:hover { border-color:#E6007E; color:#E6007E; }
-  .notify-chip.on { border:1.5px solid #E6007E; background:#fff5fa; color:#E6007E; font-weight:700; }
-  .notify-chip.chip-undecided { color:#999; }
-  .notify-chip.chip-undecided.on { color:#E6007E; }
+  #notifyOverlay .pw-modal h3 { font-size:17px; font-weight:700; letter-spacing:-0.2px; margin-bottom:7px; }
+  #notifyOverlay .pw-modal p { font-size:12px; color:#9a9a9a; line-height:1.6; margin-bottom:26px; }
+  /* 입력칸은 테두리 대신 옅은 배경으로. 선이 줄면 화면이 차분해진다. */
+  #notifyOverlay .pw-input {
+    background:#f7f7f8; border:1px solid transparent; border-radius:11px;
+    padding:13px 14px; font-size:14px; margin-bottom:8px;
+    transition:background .15s, border-color .15s;
+  }
+  #notifyOverlay .pw-input:focus { background:#fff; border-color:#111; }
+  #notifyOverlay .pw-input.error { background:#fff; border-color:#ff3b3b; }
+  #notifyOverlay .pw-select {
+    border:1.5px solid #111; border-radius:11px; padding:12.5px 14px;
+    font-size:14px; font-weight:500; margin-bottom:0;
+  }
+  #notifyOverlay .pw-select.placeholder-selected { border-color:#ddd; color:#aaa; font-weight:400; }
+  #notifyOverlay .pw-select.error { border-color:#ff3b3b; }
+  #notifyOverlay .notify-consent-row {
+    margin:26px 0 14px; padding-top:18px; border-top:1px solid #f0f0f0;
+  }
+  #notifyOverlay .notify-consent-label { font-weight:400; color:#666; }
+  #notifyOverlay .pw-btn-row { gap:8px; }
+  #notifyOverlay .pw-confirm, #notifyOverlay .pw-cancel {
+    border-radius:12px; padding:14px; font-weight:500;
+  }
+  #notifyOverlay .pw-cancel { flex:1; background:#fff; border:1px solid #e4e4e4; color:#888; }
+  #notifyOverlay .pw-confirm { flex:1.6; }
+
+  /* 용량 / 색상 고르기 */
+  .notify-opt-label { font-size:11px; color:#9a9a9a; letter-spacing:0.04em; text-align:left; margin:22px 2px 8px; }
+  .notify-chips { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+  .notify-chips.cols-2 { grid-template-columns:repeat(2,1fr); }
+  .notify-chips.error .notify-chip { border-color:#ff3b3b; }
+  .notify-chip {
+    display:flex; align-items:center; justify-content:center;
+    padding:11px 6px; background:#fff; border:1px solid #ebebeb; border-radius:10px;
+    font-family:inherit; font-size:12.5px; font-weight:400; color:#666; cursor:pointer;
+    transition:border-color .12s, color .12s; -webkit-tap-highlight-color:transparent;
+  }
+  .notify-chip:hover { border-color:#bbb; color:#111; }
+  .notify-chip.on { border:1.5px solid #111; color:#111; font-weight:500; }
+  /* '미정'은 실제 선택지와 성격이 달라 한 줄을 통째로 쓰고 점선으로 구분한다.
+     색상 개수가 몇 개든 줄이 어색하게 남지 않는다. */
+  .notify-chip.chip-undecided {
+    grid-column:1 / -1; margin-top:7px; padding:9px 0;
+    border:1px dashed #e4e4e4; color:#b0b0b0; font-size:12px;
+  }
+  .notify-chip.chip-undecided:hover { border-color:#c8c8c8; color:#777; }
+  .notify-chip.chip-undecided.on { border:1.5px solid #111; border-style:solid; color:#111; font-weight:500; }
 
   @media (max-width:600px) {
     .page-title { font-size:22px; }
@@ -929,21 +969,21 @@
     var m = modelsList(preorderData[notifyTargetIdx])[opt ? Number(opt.getAttribute('data-i')) : -1];
     if (!m) { area.innerHTML = ''; return; }
 
+    /* 용량은 글자가 짧아 3열, 색상은 이름이 길 수 있어 2열로 깔아야 줄이 안 흐트러진다. */
+    function group(kind, label, list, cols) {
+      return '<div class="notify-opt-label">' + label + '</div>' +
+        '<div class="notify-chips' + (cols === 2 ? ' cols-2' : '') + '" id="notify' + kind + 'Chips">' +
+        list.map(function (v) {
+          return '<button type="button" class="notify-chip" onclick="pickNotifyOpt(\'' +
+                 kind.toLowerCase() + '\', this)" data-v="' + escapeHtml(v) + '">' + escapeHtml(v) + '</button>';
+        }).join('') +
+        '<button type="button" class="notify-chip chip-undecided" onclick="pickNotifyOpt(\'' +
+        kind.toLowerCase() + '\', this)" data-v="">아직 정하지 못했어요</button></div>';
+    }
+
     var html = '';
-    if (m.storages.length) {
-      html += '<div class="notify-opt-label">용량</div><div class="notify-chips" id="notifyStorageChips">' +
-        m.storages.map(function (s) {
-          return '<button type="button" class="notify-chip" onclick="pickNotifyOpt(\'storage\', this)" data-v="' + escapeHtml(s) + '">' + escapeHtml(s) + '</button>';
-        }).join('') +
-        '<button type="button" class="notify-chip chip-undecided" onclick="pickNotifyOpt(\'storage\', this)" data-v="">미정</button></div>';
-    }
-    if (m.colors.length) {
-      html += '<div class="notify-opt-label">색상</div><div class="notify-chips" id="notifyColorChips">' +
-        m.colors.map(function (c) {
-          return '<button type="button" class="notify-chip" onclick="pickNotifyOpt(\'color\', this)" data-v="' + escapeHtml(c) + '">' + escapeHtml(c) + '</button>';
-        }).join('') +
-        '<button type="button" class="notify-chip chip-undecided" onclick="pickNotifyOpt(\'color\', this)" data-v="">미정</button></div>';
-    }
+    if (m.storages.length) html += group('Storage', '용량', m.storages, 3);
+    if (m.colors.length) html += group('Color', '색상', m.colors, 2);
     area.innerHTML = html;
   }
 
@@ -1039,11 +1079,11 @@
     const stRow = document.getElementById('notifyStorageChips');
     const coRow = document.getElementById('notifyColorChips');
     if (stRow && notifyPick.storage === null) {
-      errorEl.textContent = '용량을 골라주세요 (아직 정하지 않으셨다면 미정)';
+      errorEl.textContent = '용량을 골라주세요';
       stRow.classList.add('error'); return;
     }
     if (coRow && notifyPick.color === null) {
-      errorEl.textContent = '색상을 골라주세요 (아직 정하지 않으셨다면 미정)';
+      errorEl.textContent = '색상을 골라주세요';
       coRow.classList.add('error'); return;
     }
     const storage = notifyPick.storage || '';
