@@ -68,6 +68,33 @@
   .badge-new     { background:#7c3aed; }
   .badge-hot     { background:#ef4444; }
   .badge-support { background:#6366f1; }
+
+  /* ══════════ 카드 배치: 사진을 위쪽 전체에 크게 ══════════
+     HTML 은 그대로 두고 CSS 로만 순서를 바꾼다. 되돌리려면 이 구역만 지우면 된다. */
+  .phone-card-top { padding:0 0 0; position:relative; }
+  .phone-info-row > div:first-child { padding:14px 18px 0; }
+  .phone-info-row { display:flex; flex-direction:column-reverse; align-items:stretch; }
+  .phone-info-row .phone-img-wrap {
+    width:100%; height:190px; border-radius:0; background:#fafafa;
+    border-bottom:1px solid #f2f2f4;
+  }
+  .phone-info-row .phone-img-wrap img { width:auto; height:100%; max-width:64%; object-fit:contain; }
+  .badge-row {
+    position:absolute; top:11px; left:11px; z-index:4;
+    display:flex; flex-direction:column; align-items:flex-start;
+    gap:4px; margin:0; max-width:45%;
+  }
+  .badge {
+    font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:7px;
+    line-height:1.35; white-space:normal; word-break:keep-all;
+    backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+  }
+  /* 사진 위에 얹히므로 옅은 바탕에 진한 글자로 (흰 글자는 밝은 폰에서 안 읽힘) */
+  .badge-new     { background:rgba(239,233,251,.93); color:#4A3A9E; }
+  .badge-hot     { background:rgba(253,234,243,.93); color:#B3005F; }
+  .badge-support { background:rgba(226,240,233,.93); color:#0F6E56; }
+  .badge-add-btn { align-self:flex-start; }
+
   .badge-soon    { background:#FF8FC7; animation: badgeSoonNeon 1.6s ease-in-out infinite; }
   @keyframes badgeSoonNeon {
     0%, 100% { box-shadow: 0 0 6px 1px rgba(255,143,199,0.85), 0 0 14px 3px rgba(255,143,199,0.55); }
@@ -112,7 +139,8 @@
 
   /* 색상 도트 */
   .color-row { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
-  .color-dot { width:22px; height:22px; border-radius:50%; border:2px solid transparent; cursor:pointer; transition:transform 0.15s; position:relative; }
+  /* 밝은 색은 배경에 묻혀 점이 안 보인다. 안쪽에 옅은 테두리를 둘러 경계를 살린다. */
+  .color-dot { width:22px; height:22px; border-radius:50%; border:2px solid transparent; box-shadow:inset 0 0 0 1px rgba(0,0,0,0.12); cursor:pointer; transition:transform 0.15s; position:relative; }
   .color-dot.active { border-color:transparent; transform:none; }
   .color-dot.active::after {
     content:'\2713'; position:absolute; inset:0; border-radius:50%;
@@ -162,21 +190,31 @@
   body.edit-mode .editable:focus { background:#fff5fa; }
 
   /* 버튼 */
-  .plan-row { padding: 8px 18px 16px; }
-  .plan-label { font-size: 11px; color: #aaa; font-weight: 600; margin-bottom: 5px; }
+  /* 요금제는 할부원금 계산의 전제 조건이라 금액 바로 아래 한 줄로 붙인다. */
+  .plan-row {
+    padding: 0 18px 14px; margin-top:-10px;
+    display:flex; align-items:baseline; gap:4px;
+  }
+  .plan-label { display:none; }
+  .plan-row::after { content:'기준'; font-size:11px; color:#aaa; font-weight:600; order:2; }
+  .plan-tag { order:1; }
+  body.edit-mode .plan-label {
+    display:block; font-size:11px; color:#E6007E; font-weight:700; order:0;
+  }
+  /* 고르는 버튼이 아니라 기준 안내다. 테두리 상자를 없애 선택지처럼 보이지 않게 한다. */
   .plan-tag {
     display: inline-block;
-    background: #fff0f6;
-    border: 1.5px solid #E6007E;
+    background: none;
+    border: 1.5px solid transparent;
     border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 12px; font-weight: 700;
-    color: #E6007E;
-    width: 100%; box-sizing: border-box;
-    min-height: 32px; line-height: 1.4;
+    padding: 2px 0;
+    font-size: 12.5px; font-weight: 700;
+    color: #444;
+    width: auto; box-sizing: border-box;
+    line-height: 1.4;
   }
   .plan-tag::before { content: none; }
-  body.edit-mode .plan-tag { cursor: text; border-color: #E6007E; border-style: dashed; color: #E6007E; }
+  body.edit-mode .plan-tag { cursor: text; padding: 6px 12px; border-color: #E6007E; border-style: dashed; color: #E6007E; }
   body.edit-mode .plan-tag:focus { border-color: #E6007E; border-style: solid; outline: none; color: #E6007E; }
 
   /* 용량 선택 바텀시트 */
