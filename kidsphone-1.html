@@ -136,7 +136,9 @@
   body.edit-mode .color-add-dot { display:flex; }
 
   /* 폰 이미지 */
-  .phone-img-wrap { width:120px; height:120px; flex-shrink:0; position:relative; border-radius:12px; overflow:hidden; cursor:default; background:#f1f5f9; display:flex; align-items:center; justify-content:center; }
+  /* 휴대폰은 세로로 긴데 정사각 칸에 넣으면 위아래가 남아 작아 보인다.
+     칸을 세로로 길게(3:4) 잡으면 같은 자리에서 폰이 훨씬 크게 보인다. */
+  .phone-img-wrap { width:132px; height:172px; flex-shrink:0; position:relative; border-radius:12px; overflow:hidden; cursor:default; background:#fafafa; display:flex; align-items:center; justify-content:center; }
   body.edit-mode .phone-img-wrap { cursor:pointer; }
   .phone-img-placeholder { font-size:40px; color:#ccc; }
   .phone-img-wrap img { width:100%; height:100%; object-fit:contain; }
@@ -1257,7 +1259,8 @@ function saveHTML() {
   const blob = new Blob([html], { type: 'text/html' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = document.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.html';
+  /* 제목으로 이름을 지으면 매번 손으로 바꿔야 해서, 원래 파일명을 그대로 쓴다. */
+  a.download = (location.pathname.split('/').pop() || 'kidsphone-1.html').replace(/\?.*$/, '') || 'kidsphone-1.html';
   a.click();
   URL.revokeObjectURL(a.href);
 }

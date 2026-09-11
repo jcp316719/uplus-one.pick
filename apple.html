@@ -141,7 +141,9 @@
   body.edit-mode .color-add-dot { display:flex; }
 
   /* 폰 이미지 */
-  .phone-img-wrap { width:120px; height:120px; flex-shrink:0; position:relative; border-radius:12px; overflow:hidden; cursor:default; background:#f1f5f9; display:flex; align-items:center; justify-content:center; }
+  /* 휴대폰은 세로로 긴데 정사각 칸에 넣으면 위아래가 남아 작아 보인다.
+     칸을 세로로 길게(3:4) 잡으면 같은 자리에서 폰이 훨씬 크게 보인다. */
+  .phone-img-wrap { width:132px; height:172px; flex-shrink:0; position:relative; border-radius:12px; overflow:hidden; cursor:default; background:#fafafa; display:flex; align-items:center; justify-content:center; }
   body.edit-mode .phone-img-wrap { cursor:pointer; }
   .phone-img-placeholder { font-size:40px; color:#ccc; }
   .phone-img-wrap img { width:100%; height:100%; object-fit:contain; }
@@ -1275,6 +1277,40 @@ function triggerPhoneImg(wrap, cardId, colorIdx, storageIdx) {
   if (!editMode) return;
   wrap.querySelector('input[type=file]').click();
 }
+/* ── 사진에서 단말기 본체 색 뽑기 ──
+   사람이 한 점을 찍으면 반사광이나 화면을 잘못 짚기 쉽고 매번 값이 달라진다.
+   여기서는 배경을 걷어낸 뒤 본체에서 가장 많이 쓰인 색을 통계로 구한다. */
+function pickPhoneColor(canvas) {
+  try {
+    const W = canvas.width, H = canvas.height;
+    const d = canvas.getContext('2d', { willReadFrequently: true })
+                    .getImageData(0, 0, W, H).data;
+    const at = (x, y) => { const k = (y * W + x) * 4; return [d[k], d[k+1], d[k+2]]; };
+    const cor = [at(0,0), at(W-1,0), at(0,H-1), at(W-1,H-1)];
+    const bg = [0,1,2].map(c => Math.round(cor.reduce((s,p) => s + p[c], 0) / 4));
+
+    const bin = {}, STEP = 16;
+    for (let y = Math.floor(H * 0.12); y < H * 0.88; y++) {
+      for (let x = Math.floor(W * 0.12); x < W * 0.88; x++) {
+        const k = (y * W + x) * 4;
+        if (d[k+3] < 8) continue;
+        const r = d[k], g = d[k+1], b = d[k+2];
+        if (Math.abs(r-bg[0]) + Math.abs(g-bg[1]) + Math.abs(b-bg[2]) < 40) continue;
+        const mx = Math.max(r,g,b);
+        if (mx > 245 || mx < 18) continue;
+        const key = Math.round(r/STEP) + ',' + Math.round(g/STEP) + ',' + Math.round(b/STEP);
+        if (!bin[key]) bin[key] = { n:0, r:0, g:0, b:0 };
+        const t = bin[key]; t.n++; t.r += r; t.g += g; t.b += b;
+      }
+    }
+    let best = null;
+    for (const key in bin) if (!best || bin[key].n > best.n) best = bin[key];
+    if (!best || best.n < 40) return null;
+    const hex = n => ('0' + Math.round(n).toString(16)).slice(-2);
+    return '#' + hex(best.r/best.n) + hex(best.g/best.n) + hex(best.b/best.n);
+  } catch (e) { return null; }
+}
+
 function replacePhoneImg(input, cardId, colorIdx, storageIdx) {
   const file = input.files[0]; if (!file) return;
   const card = cards.find(c => c.id === cardId);
@@ -1299,7 +1335,17 @@ function replacePhoneImg(input, cardId, colorIdx, storageIdx) {
       canvas.getContext('2d').drawImage(original, 0, 0, w, h);
       const compressed = canvas.toDataURL('image/jpeg', 0.82);
 
+      /* 사진에서 단말기 본체 색을 뽑아 색상 점에 그대로 넣는다.
+         스포이드로 찍어 RGB 값을 옮겨 적을 필요가 없어진다. */
       if (!card.colors[colorIdx]) card.colors[colorIdx] = { hex: '#e2e8f0' };
+      if (!card.colors[colorIdx].hexLocked) {
+        const picked = pickPhoneColor(canvas);
+        if (picked) {
+          card.colors[colorIdx].hex = picked;
+          const dot0 = document.querySelectorAll('#' + cardId + ' .color-dot')[colorIdx];
+          if (dot0) dot0.style.background = picked;
+        }
+      }
       card.colors[colorIdx].image = compressed;
       // images 에 이전 사진이 남아 있으면 상세페이지가 옛 사진을 보여준다. 함께 갱신한다.
       card.colors[colorIdx].images = { '0': compressed };
@@ -1711,7 +1757,8 @@ function saveHTML() {
   const blob = new Blob([html], { type: 'text/html' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = document.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.html';
+  /* 제목으로 이름을 지으면 매번 손으로 바꿔야 해서, 원래 파일명을 그대로 쓴다. */
+  a.download = (location.pathname.split('/').pop() || 'apple.html').replace(/\?.*$/, '') || 'apple.html';
   a.click();
   URL.revokeObjectURL(a.href);
 }

@@ -694,7 +694,8 @@ function saveHTML() {
   const blob = new Blob([html], { type: 'text/html' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = document.title.replace(/[^a-zA-Z0-9가-힣]/g, '_') + '.html';
+  /* 제목으로 이름을 지으면 매번 손으로 바꿔야 해서, 원래 파일명을 그대로 쓴다. */
+  a.download = (location.pathname.split('/').pop() || 'homecam-1.html').replace(/\?.*$/, '') || 'homecam-1.html';
   a.click();
   URL.revokeObjectURL(a.href);
 }
