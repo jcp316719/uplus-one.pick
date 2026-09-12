@@ -45,6 +45,19 @@ window.__plans = [
     ]
   },
   {
+    "name": "플러스 플랜105",
+    "monthly": 105000,
+    "desc": [
+      "통화 기본제공 + 부가영상 300분",
+      "문자 기본제공",
+      "데이터 무제한",
+      "U 투게더 결합할인",
+      "테더링 + 쉐어링 100GB"
+    ],
+    "ott": ["넷플릭스", "유튜브", "디즈니+", "티빙"],
+    "ottNote": "택 1"
+  },
+  {
     "name": "LTE 키즈22",
     "monthly": 22000,
     "desc": [
@@ -64,28 +77,65 @@ window.__combo = {
   "suffix": "추가지원금!",
   "off": false
 };
-
-/* ── 개통 후기 ──
-   목록은 여기 한 곳에만 있고, 모든 기기 상세페이지에 공통으로 나온다.
-   기기를 새로 추가해도 따로 손댈 것이 없다.
-   지금 보고 있는 기기·가입유형과 맞는 후기가 앞으로 정렬된다.
-
-   join : 'move'(번호이동) | 'change'(기기변경) | '' (표시 안 함)
-   off  : true 로 두면 그 후기만 숨긴다.
-
-   ⚠️ 반드시 실제로 받은 내용만 넣어 주세요.
-      지어낸 후기를 올리면 표시광고법 위반이 됩니다. */
 window.__reviews = {
   "off": false,
   "list": [
-    { "join": "move",   "device": "Z Fold8",   "date": "2026.07", "name": "김O민", "text": "타사 사용 중이었는데 위약금까지 계산해 비교해주셔서 안심하고 폴드8로 바꿨어요." },
-    { "join": "move",   "device": "",          "date": "2026.07", "name": "한O일", "text": "SKT에서 넘어왔는데 받을 수 있는 혜택을 시원시원하게 설명해주셔서 만족했습니다." },
-    { "join": "change", "device": "",          "date": "2026.08", "name": "최O기", "text": "기기변경인데도 할인 혜택을 많이 받았어요. 요금제 상담도 꼼꼼해서 좋았습니다." },
-    { "join": "change", "device": "",          "date": "2026.07", "name": "전O민", "text": "매장 방문할 시간이 없었는데 카톡으로 상담부터 개통까지 편하게 진행했어요." },
-    { "join": "change", "device": "",          "date": "2026.08", "name": "박O은", "text": "여러 곳 비교해보고 왔는데 여기가 가장 저렴했어요. 조건도 솔직하게 안내해주셨습니다." },
-    { "join": "change", "device": "",          "date": "2026.06", "name": "안O림", "text": "홈페이지에서 본 금액과 실제 개통 금액이 같았어요. 추가 비용 없이 깔끔했습니다." },
-    { "join": "change", "device": "키즈폰",    "date": "2026.09", "name": "김O호", "text": "아이 첫 휴대폰이라 고민했는데 요금제부터 필요한 기능까지 자세히 알려주셔서 좋았어요." },
-    { "join": "new",    "device": "인터넷+TV", "date": "2026.09", "name": "강O민", "text": "인터넷과 휴대폰 결합 혜택을 표로 비교해주셔서 할인 내용도 쉽게 이해할 수 있었습니다." }
+    {
+      "join": "move",
+      "device": "Z Fold8",
+      "date": "2026.07",
+      "name": "김O민",
+      "text": "타사 사용 중이었는데 위약금까지 계산해 비교해주셔서 안심하고 폴드8로 바꿨어요."
+    },
+    {
+      "join": "move",
+      "device": "",
+      "date": "2026.07",
+      "name": "한O일",
+      "text": "SKT에서 넘어왔는데 받을 수 있는 혜택을 시원시원하게 설명해주셔서 만족했습니다."
+    },
+    {
+      "join": "change",
+      "device": "",
+      "date": "2026.08",
+      "name": "최O기",
+      "text": "기기변경인데도 할인 혜택을 많이 받았어요. 요금제 상담도 꼼꼼해서 좋았습니다."
+    },
+    {
+      "join": "change",
+      "device": "",
+      "date": "2026.07",
+      "name": "전O민",
+      "text": "매장 방문할 시간이 없었는데 카톡으로 상담부터 개통까지 편하게 진행했어요."
+    },
+    {
+      "join": "change",
+      "device": "",
+      "date": "2026.08",
+      "name": "박O은",
+      "text": "여러 곳 비교해보고 왔는데 여기가 가장 저렴했어요. 조건도 솔직하게 안내해주셨습니다."
+    },
+    {
+      "join": "change",
+      "device": "",
+      "date": "2026.06",
+      "name": "안O림",
+      "text": "홈페이지에서 본 금액과 실제 개통 금액이 같았어요. 추가 비용 없이 깔끔했습니다."
+    },
+    {
+      "join": "change",
+      "device": "키즈폰",
+      "date": "2026.09",
+      "name": "김O호",
+      "text": "아이 첫 휴대폰이라 고민했는데 요금제부터 필요한 기능까지 자세히 알려주셔서 좋았어요."
+    },
+    {
+      "join": "new",
+      "device": "인터넷+TV",
+      "date": "2026.09",
+      "name": "강O민",
+      "text": "인터넷과 휴대폰 결합 혜택을 표로 비교해주셔서 할인 내용도 쉽게 이해할 수 있었습니다."
+    }
   ]
 };
 </script>
@@ -285,6 +335,33 @@ window.__reviews = {
     line-height:1.65; margin:1px 0 5px 10px;
   }
   .plan-benefit .pb-note::before { content:none; }
+
+  /* ── 요금제에 딸린 OTT 혜택 ── */
+  .ott-row {
+    display:flex; align-items:flex-start; flex-wrap:nowrap; gap:8px;
+    margin-top:10px; padding-top:11px; border-top:1px solid #e6e6ea;
+  }
+  /* 요금제 혜택 줄에 붙는 가운뎃점이 여기까지 따라오지 않게 한다 */
+  .plan-benefit .ott-row::before { content:none; }
+  .ott-item { display:flex; flex-direction:column; align-items:center; gap:5px; width:46px; flex-shrink:0; }
+  .ott-dot {
+    width:42px; height:42px; border-radius:50%; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:9px; font-weight:700; text-align:center; line-height:1.15;
+    letter-spacing:-0.3px;
+  }
+  /* 로고 파일에 이미 원형 테두리가 들어 있어 배경 동그라미를 넣지 않는다 (ottHTML 참고) */
+  .ott-dot img { width:100%; height:100%; object-fit:contain; display:block; }
+  .ott-item em {
+    font-style:normal; font-size:11.5px; color:#5c5c66; font-weight:700;
+    white-space:nowrap; line-height:1.3; text-align:center;
+  }
+  /* 로고 옆에 붙는 작은 안내. 줄바꿈되면 왼쪽 칸만 길어져 여백이 생긴다. */
+  .ott-note {
+    align-self:center; font-size:11px; font-weight:800; line-height:1.3;
+    color:#B3005F; background:#fdeaf3; padding:5px 9px; border-radius:9px;
+    white-space:nowrap; margin-left:2px;
+  }
 
   /* ── 할인방식 선택 ── */
   .cmp-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -708,6 +785,16 @@ let avail = plans;
 let combo = window.__combo || null;
 function planNorm(s){ return String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ''); }
 function resolvePlans(){
+  /* 0순위 — 요금제를 여러 개 쓰는 상품 (planList)
+     요금제에 따라 이통사 지원금이 달라지는 기종에 쓴다. */
+  const list = card && card.planList;
+  if (Array.isArray(list) && list.length) {
+    const keys = list.map(planNorm);
+    const m = plans.filter(p => keys.indexOf(planNorm(p.name)) >= 0);
+    /* 적어둔 순서를 그대로 따른다 */
+    m.sort((a, b) => keys.indexOf(planNorm(a.name)) - keys.indexOf(planNorm(b.name)));
+    if (m.length) return m;
+  }
   /* 1순위 — 상품 데이터에 적힌 요금제 */
   const want = planNorm(card && card.plan);
   if (want) {
@@ -789,7 +876,11 @@ function tint(hex){
         return render();
       }
     }
-  } catch(e){}
+  } catch(e){
+    /* 화면 그리는 중 오류가 나면 조용히 넘기지 않고 남긴다.
+       예전에 이 자리에서 오류가 묻히는 바람에 원인을 찾기 어려웠다. */
+    console.error('[detail] 렌더 실패:', e);
+  }
 
   fetch(srcKey + '.html').then(r => r.text()).then(html => {
     const arr = extractCards(html);
@@ -833,6 +924,28 @@ function colorImage(ci, si){
   }
   return '';
 }
+/* 이통사 지원금은 요금제에 따라 달라질 수 있다.
+   subsidyByPlan 에 요금제 이름별 금액이 있으면 그걸 쓰고, 없으면 기존 subsidy 를 쓴다.
+   (요금제가 하나뿐인 기존 상품들은 아무 영향이 없다) */
+function subsidyOf(st, plan){
+  const m = st && st.subsidyByPlan;
+  if (m && plan) {
+    const want = planNorm(plan.name);
+    for (const k in m) if (planNorm(k) === want) return Math.abs(parseAmt(m[k]));
+  }
+  return Math.abs(parseAmt(st.subsidy));
+}
+
+/* 관리자가 지원금을 고치면 지금 고른 요금제 칸에 기록한다 */
+function setSubsidyOf(st, plan, val){
+  const m = st && st.subsidyByPlan;
+  if (m && plan) {
+    const want = planNorm(plan.name);
+    for (const k in m) if (planNorm(k) === want) { m[k] = val; return; }
+  }
+  st.subsidy = val;
+}
+
 function upickOf(st, join){
   const alt = st.oneDiscountChange;
   if (join === 'change' && alt != null && alt !== '') return Math.abs(parseAmt(alt));
@@ -846,7 +959,7 @@ function scenario(kind){
   const st = curStorage();
   const plan = avail[sel.plan] || plans[0];
   const price   = parseAmt(st.price);
-  const subsidy = Math.abs(parseAmt(st.subsidy));
+  const subsidy = subsidyOf(st, plan);
   const upick   = upickOf(st, sel.join);
   const months  = sel.months;
   const cm      = months || 24;                       // 총액 비교 기준 개월
@@ -871,6 +984,12 @@ function compute(){ return scenario(sel.discount); }
 function render(){
   avail = resolvePlans();
   if (sel.plan >= avail.length) sel.plan = 0;
+  /* 카드에 적힌 요금제를 기본으로 고른다.
+     상품 목록에서 본 금액과 상세페이지 첫 화면 금액이 어긋나지 않도록. */
+  if (card && card.plan) {
+    const i = avail.findIndex(p => planNorm(p.name) === planNorm(card.plan));
+    if (i >= 0) sel.plan = i;
+  }
   document.title = (card.name || '상품') + ' - U+ Pick';
   const ogt = document.querySelector('meta[property="og:title"]');
   if (ogt) ogt.setAttribute('content', document.title);
@@ -963,6 +1082,41 @@ function planDesc(d){
          '<span class="pb-note">(' + esc(String(d).slice(i + 1)) + ')</span></div>';
 }
 
+/* ── 요금제에 딸린 OTT 혜택 ──
+   요금제 데이터의 ott 배열에 이름을 적으면 동그라미로 나온다.
+   images 폴더에 ott-넷플릭스.png 처럼 파일을 두면 글자 대신 그 로고가 쓰인다. */
+function ottHTML(plan){
+  const list = plan && plan.ott;
+  if (!Array.isArray(list) || !list.length) return '';
+
+  /* 목록은 함수 안에 둔다. 바깥에 두면 페이지를 그리는 코드가 먼저 실행돼
+     아직 값이 채워지지 않은 상태로 읽게 되고, 상세페이지가 통째로 안 열린다. */
+  const OTT_STYLE = {
+    '넷플릭스':      { bg:'#141414', file:'ott-netflix' },
+    '유튜브 프리미엄': { bg:'#ff0033', file:'ott-youtube' },
+    '유튜브':        { bg:'#ff0033', file:'ott-youtube' },
+    '디즈니+':       { bg:'#0063e5', file:'ott-disney' },
+    '티빙':          { bg:'#ff153c', file:'ott-tving' }
+  };
+
+  const items = list.map(n => {
+    const st = OTT_STYLE[n] || { bg:'#666', file:'' };
+    const inner = st.file
+      /* 로고 파일이 없으면 글자로 되돌리고, 그때는 브랜드 색 배경을 다시 깐다 */
+      ? '<img src="images/' + st.file + '.png" alt="' + esc(n) + '"' +
+        ' onerror="this.parentNode.style.background=\'' + st.bg + '\';' +
+        'this.replaceWith(document.createTextNode(\'' + esc(n) + '\'))">'
+      : esc(n);
+    /* 로고 파일을 쓰는 경우 로고에 이미 테두리가 있으므로 배경색을 넣지 않는다.
+       글자로 나올 때만 브랜드 색을 깐다. */
+    const bgStyle = st.file ? '' : ' style="background:' + st.bg + '"';
+    return '<span class="ott-item"><span class="ott-dot"' + bgStyle + '>' +
+           inner + '</span><em>' + esc(n) + '</em></span>';
+  }).join('');
+  return '<div class="ott-row">' + items +
+         '<span class="ott-note">' + esc(plan.ottNote || '중 택 1') + '</span></div>';
+}
+
 function paintOptions(){
   const s = compute();
   const colors = card.colors || [], storages = card.storages || [];
@@ -1009,6 +1163,7 @@ function paintOptions(){
     '<div class="plan-extra">' +
       ((hasDesc || editMode)
         ? '<div class="plan-benefit">' + (plan.desc || []).map(planDesc).join('') +
+            ottHTML(plan) +
             '<div class="ahint admin-only">월정액 <span class="editable" contenteditable="false" ' +
             'onblur="savePlanMonthly(this.textContent)">' + num(plan.monthly) + '</span>원 · 수정 후 [💾 요금제 저장]</div>' +
           '</div>'
@@ -1751,7 +1906,12 @@ function applyEditable(on){
   document.querySelectorAll('.editable').forEach(el => el.contentEditable = on ? 'true' : 'false');
 }
 function saveAmt(field, val){
-  curStorage()[field] = fmt(parseAmt(val));
+  /* 지원금은 요금제별로 따로 가질 수 있으므로 지금 고른 요금제 칸에 기록한다 */
+  if (field === 'subsidy') {
+    setSubsidyOf(curStorage(), avail[sel.plan], fmt(parseAmt(val)));
+  } else {
+    curStorage()[field] = fmt(parseAmt(val));
+  }
   paintOptions(); paintReceipt();
 }
 function saveUpick(val){
@@ -1879,4 +2039,4 @@ function download(text, filename){
 </script>
 
 
-<input type="file" accept=".html,.htm,text/html" style="display: none;"></body></html>
+<input type="file" accept=".html,.htm,text/html" style="display: none;"><input type="file" accept=".html,.htm,text/html" style="display: none;"></body></html>
