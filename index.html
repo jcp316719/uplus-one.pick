@@ -638,6 +638,10 @@ function wcsFire(){ if(window.wcs && window.wcs_do) wcs_do(); }
   .event-big-dots span.active { width: 16px; border-radius: 4px; background: #222; }
 
   /* ── FAQ (친구추천 이미지 배너 삭제됨) ── */
+  /* 하단 FAQ 미리보기는 숨겨둔다.
+     FAQ 는 상단 메뉴와 모바일 아이콘으로 들어갈 수 있어 통로가 따로 있다.
+     다시 보이게 하려면 바로 아래 한 줄만 지우면 된다. */
+  .faq-referral-section { display: none !important; }
   .faq-referral-section { padding: 28px 16px 36px; background: #fff; }
   .faq-referral-inner { display: flex; flex-direction: column; gap: 24px; }
   .faq-col-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
