@@ -25,6 +25,8 @@
   body {
     font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
     background:#f7f8fa; color:#222; max-width:1200px; margin:0 auto; min-height:100vh;
+    /* 한글이 한 단어인데도 글자 단위로 줄이 나뉘어 쪼개지는 것을 막는다 */
+    word-break:keep-all;
   }
   a { color:inherit; text-decoration:none; }
 
@@ -312,6 +314,20 @@
     border-radius:12px; padding:14px; font-weight:500;
   }
   #notifyOverlay .pw-cancel { flex:1; background:#fff; border:1px solid #e4e4e4; color:#888; }
+
+  /* 신청 완료 후 카톡으로 이어가기 */
+  .nt-talk {
+    margin-top:16px; padding:14px; background:#f7f7f8; border-radius:12px; text-align:left;
+  }
+  .nt-talk-t { font-size:13px; font-weight:800; color:#33333c; }
+  .nt-talk-s { font-size:11.5px; color:#7a7a86; line-height:1.65; margin-top:4px; font-weight:600; }
+  .nt-talk-s b { color:#B3005F; }
+  .nt-kakao {
+    width:100%; margin-top:11px; padding:13px; border:none; border-radius:11px;
+    background:#FEE500; color:#3c1e1e; font-size:14px; font-weight:800;
+    cursor:pointer; font-family:inherit;
+  }
+  .nt-kakao:hover { background:#f5dc00; }
   #notifyOverlay .pw-confirm { flex:1.6; }
 
   /* 용량 / 색상 고르기 */
@@ -1127,6 +1143,16 @@
       return;
     }
 
+    /* 카톡으로 이어갈 때 붙여넣을 문구를 미리 만들어 둔다 */
+    lastNotifyText = [
+      '[U+ Pick 사전예약 신청]',
+      '상품 : ' + product,
+      '이름 : ' + name,
+      '연락처 : ' + phone,
+      '',
+      '문의드립니다.'
+    ].join('\n');
+
     const btn = document.getElementById('notifySubmitBtn');
     btn.disabled = true;
     btn.textContent = '전송 중...';
@@ -1142,6 +1168,7 @@
         model: model,
         storage: storage || '미정',
         color: color || '미정',
+        source: (typeof visitSource === 'function') ? visitSource() : '',
         page: location.href,
         time: new Date().toString(),
         consent: true,
@@ -1156,12 +1183,54 @@
     });
   }
 
+  /* 방금 신청한 내용. 카톡으로 이어갈 때 붙여넣을 문구로 쓴다. */
+  var lastNotifyText = '';
+
   function showNotifySuccessInModal() {
+    /* 접수만 하고 끝내면 결국 전화를 걸어야 한다.
+       통화를 부담스러워하는 분들을 위해 카톡으로 이어갈 길을 함께 열어둔다. */
     document.querySelector('#notifyOverlay .pw-modal').innerHTML = `
       <h3>✅ 신청 완료</h3>
       <p>알림 신청이 정상적으로 접수되었습니다.<br>출시/예약 소식을 가장 먼저 안내드릴게요.</p>
-      <button class="pw-confirm" style="width:100%" onclick="closeNotifyModal()">확인</button>
+      <div class="nt-talk">
+        <div class="nt-talk-t">더 궁금한 점이 있으신가요?</div>
+        <div class="nt-talk-s">카카오톡으로 편하실 때 문의를 남겨주세요.<br>
+          신청하신 내용이 <b>복사</b>되어 있어 붙여넣기만 하시면 됩니다.</div>
+        <button type="button" class="nt-kakao" onclick="notifyToKakao()">💬 카카오톡으로 문의하기</button>
+      </div>
+      <button class="pw-cancel" style="width:100%; margin-top:8px;" onclick="closeNotifyModal()">나중에 하기</button>
     `;
+  }
+
+  /* 신청 내용을 복사해 두고 카카오톡 채널을 연다 */
+  function notifyToKakao() {
+    copyToClipboard(lastNotifyText);
+    var url = 'https://pf.kakao.com/_xdxaxlxfX/chat';
+    var w = null;
+    try { w = window.open(url, '_blank'); } catch (e) {}
+    if (!w || w.closed || typeof w.closed === 'undefined') location.href = url;
+    closeNotifyModal();
+  }
+
+  function copyToClipboard(t) {
+    if (!t) return;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).catch(function () { legacyCopy(t); });
+      } else { legacyCopy(t); }
+    } catch (e) { legacyCopy(t); }
+  }
+  function legacyCopy(t) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = t;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    } catch (e) {}
   }
 
   function onEditBtnClick() { toggleEdit(!editMode); }

@@ -145,6 +145,9 @@ window.__reviews = {
   body {
     font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
     background:#fff; color:#111; -webkit-text-size-adjust:100%;
+    /* 한글은 기본적으로 글자 단위로 줄이 나뉘어 '데이터플랜MAX' 가
+       '데 / 이터플랜MAX' 처럼 쪼개진다. 단어 단위로만 끊기게 한다. */
+    word-break:keep-all;
   }
   a { text-decoration:none; color:inherit; }
   .num { font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
@@ -448,7 +451,9 @@ window.__reviews = {
     padding:11px 12px; margin-bottom:12px; text-align:left;
   }
   .bk-sum-l { display:block; font-size:10.5px; color:#B3005F; letter-spacing:0.03em; margin-bottom:5px; font-weight:700; }
-  #bookSum { font-size:11.5px; color:#444; line-height:1.7; font-weight:600; }
+  /* 한글은 기본적으로 글자 단위로 줄이 나뉘어 '데이터플랜MAX' 가 '데 / 이터플랜MAX' 로
+     쪼개진다. 단어 단위로만 끊기게 한다. */
+  #bookSum { font-size:11.5px; color:#444; line-height:1.7; font-weight:600; word-break:keep-all; }
   #bookSum b { font-weight:800; color:#111; }
   .bk-box input[type=text], .bk-box input[type=tel] {
     width:100%; background:#f7f7f8; border:1px solid transparent; border-radius:11px;
@@ -461,7 +466,9 @@ window.__reviews = {
     display:flex; align-items:center; gap:7px; margin:10px 0 6px;
     font-size:12px; color:#666; cursor:pointer; text-align:left;
   }
-  .bk-agree input { width:15px; height:15px; accent-color:#E6007E; flex-shrink:0; }
+  .bk-agree input { width:15px !important; height:15px; accent-color:#E6007E; flex-shrink:0; margin:0 !important; padding:0 !important; }
+  /* 한글은 글자 단위로 줄이 나뉠 수 있어, 칸이 좁아지면 세로로 쪼개진다 */
+  .bk-agree span { flex:1 1 auto; word-break:keep-all; }
   .bk-detail { font-size:10.5px; color:#a8a8b0; line-height:1.6; text-align:left; margin-bottom:8px; }
   .bk-detail a { color:#E6007E; text-decoration:underline; }
   .bk-row { display:flex; gap:8px; margin-top:6px; }
@@ -473,6 +480,23 @@ window.__reviews = {
   .bk-submit { flex:1.6; background:#E6007E; color:#fff; }
   .bk-submit:disabled { background:#f0a6cd; cursor:default; }
   .book-ok { font-size:38px; margin-bottom:10px; }
+  /* 예약 완료 후 카톡으로 이어가기 */
+  .bk-talk {
+    margin-top:16px; padding:14px; background:#f7f7f8; border-radius:12px; text-align:left;
+  }
+  .bk-talk-t { font-size:13px; font-weight:800; color:#33333c; }
+  .bk-talk-s { font-size:11.5px; color:#7a7a86; line-height:1.65; margin-top:4px; font-weight:600; }
+  .bk-talk-s b { color:#B3005F; }
+  .bk-kakao {
+    width:100%; margin-top:11px; padding:13px; border:none; border-radius:11px;
+    background:#FEE500; color:#3c1e1e; font-size:14px; font-weight:800;
+    cursor:pointer; font-family:inherit;
+  }
+  .bk-kakao:hover { background:#f5dc00; }
+  .bk-later {
+    background:#fff !important; border:1px solid #e4e4e4 !important; color:#888 !important;
+    font-weight:700 !important;
+  }
   .pw-ok {
     width:100%; margin-top:14px; padding:14px; border:none; border-radius:12px;
     background:#E6007E; color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
@@ -661,7 +685,8 @@ window.__reviews = {
   .pw-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:999; align-items:center; justify-content:center; }
   .pw-overlay.visible { display:flex; }
   .pw-box { background:#fff; border-radius:14px; padding:24px; width:280px; text-align:center; }
-  .pw-box input { width:100%; padding:11px; border:1px solid #ddd; border-radius:8px; font-size:15px; margin:12px 0 6px; font-family:inherit; }
+  /* 체크박스까지 가로 100% 가 되면 옆의 글자가 밀려 세로로 쪼개진다. 체크박스는 제외한다. */
+  .pw-box input:not([type=checkbox]) { width:100%; padding:11px; border:1px solid #ddd; border-radius:8px; font-size:15px; margin:12px 0 6px; font-family:inherit; }
   .pw-box input.error { border-color:#ef4444; }
   .pw-box .err { color:#ef4444; font-size:12px; min-height:16px; }
   .pw-box button { width:100%; padding:11px; background:#E6007E; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; margin-top:8px; font-family:inherit; }
@@ -756,8 +781,8 @@ const CONTRACT_RATE = 0.25;
 /* ── 상담 가능 시간 (연중무휴 10:00 ~ 20:00) ──
    이 시간이 지나면 카톡·전화 대신 '상담 예약' 폼이 뜬다.
    시간은 방문자 기기 설정이 아니라 한국 시각으로 직접 계산한다. */
-const BIZ_OPEN = 10;
-const BIZ_CLOSE = 20;
+const BIZ_OPEN = 23;
+const BIZ_CLOSE = 24;
 /* 사전예약 신청과 같은 곳으로 보낸다 (구글 시트 + 메일 + 관리자 알림톡) */
 const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz81emfBNw6QzCFaSp_GMNhsOc2U2mvfvxiTZeO6yZd1_TSgSD9myA2k1g6pf4ktIUHPw/exec';
 
@@ -1432,6 +1457,7 @@ function submitBook() {
       name: name,
       phone: phone,
       product: '[상담예약] ' + b.text + (b.monthly ? ' · 월 ' + fmt(b.monthly) : ''),
+      source: (typeof visitSource === 'function') ? visitSource() : '',
       page: location.href,
       time: new Date().toString(),
       consent: true,
@@ -1441,11 +1467,27 @@ function submitBook() {
 }
 
 function bookDone() {
+  /* 예약만 받고 끝내면 다음 날 전화를 걸 수밖에 없다.
+     통화를 부담스러워하는 분들을 위해 카톡으로 이어갈 길을 같이 열어둔다.
+     조건은 이미 복사해 두므로 채팅창에 붙여넣기만 하면 대화가 시작된다. */
   document.querySelector('#bookOverlay .pw-box').innerHTML =
     '<div class="book-ok">✅</div>' +
     '<h3>예약이 접수되었습니다</h3>' +
     '<p>' + BIZ_OPEN + '시 영업 시작과 함께<br>남겨주신 번호로 연락드리겠습니다.</p>' +
-    '<button class="pw-ok" onclick="closeBookModal()">확인</button>';
+    '<div class="bk-talk">' +
+      '<div class="bk-talk-t">통화가 부담스러우신가요?</div>' +
+      '<div class="bk-talk-s">카카오톡으로 편하실 때 문의를 남겨주세요.<br>' +
+        '선택하신 조건이 <b>복사</b>되어 있어 붙여넣기만 하시면 됩니다.</div>' +
+      '<button class="bk-kakao" onclick="bookToKakao()">💬 카카오톡으로 문의하기</button>' +
+    '</div>' +
+    '<button class="pw-ok bk-later" onclick="closeBookModal()">나중에 하기</button>';
+}
+
+/* 예약 조건을 복사해 두고 카카오톡 채널을 연다 */
+function bookToKakao() {
+  try { copyText(summaryText()); } catch (e) {}
+  openKakao();
+  closeBookModal();
 }
 
 /* 카드 한 장씩 넘긴다. 모바일은 손가락으로도 넘어간다. */

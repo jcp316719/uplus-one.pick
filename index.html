@@ -49,6 +49,8 @@ function wcsFire(){ if(window.wcs && window.wcs_do) wcs_do(); }
     margin: 0 auto;
     min-height: 100vh;
     position: relative;
+    /* 한글이 한 단어인데도 글자 단위로 줄이 나뉘어 쪼개지는 것을 막는다 */
+    word-break: keep-all;
   }
 
   /* ── PC 반응형 ── */

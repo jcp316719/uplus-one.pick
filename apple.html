@@ -22,7 +22,9 @@
 <title>아이폰 - U+ Pick</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:#f7f8fa; max-width:1200px; margin:0 auto; min-height:100vh; }
+  /* word-break:keep-all — 한글이 '데이터플랜MAX' 처럼 한 단어인데도
+     글자 단위로 줄이 나뉘어 쪼개지는 것을 막는다 */
+  body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:#f7f8fa; max-width:1200px; margin:0 auto; min-height:100vh; word-break:keep-all; }
 
   /* 툴바 */
   .edit-toolbar { background:#222; color:#fff; padding:10px 16px; display:none; align-items:center; justify-content:space-between; font-size:12px; position:sticky; top:0; z-index:200; }
