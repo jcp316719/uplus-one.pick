@@ -275,22 +275,28 @@
 
   /* ── 하단 고정 CTA ── */
   /* ── STICKY BOTTOM CTA ── */
-  .bottom-cta { position: sticky; bottom: 20px; display: flex; justify-content: center; gap: 12px; z-index: 100; pointer-events: none; padding: 0 20px; }
-  .cta-kakao, .cta-call {
-    pointer-events: all;
-    height: 52px; padding: 0 22px; border-radius: 26px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    text-decoration: none; border: none; cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.22);
-    transition: transform .15s, box-shadow .15s;
-    font-size: 14px; font-weight: 800;
+  /* ── 플로팅 상담 버튼 (우측 하단) ── */
+  .fab-cta { position:fixed; right:16px; bottom:18px; z-index:120; display:flex; flex-direction:column; align-items:flex-end; gap:10px; transition:opacity .25s, transform .25s; }
+  .fab-cta.fab-hide { opacity:0; transform:translateY(16px); pointer-events:none; }
+  .fab-btn { display:flex; align-items:center; text-decoration:none; border:none; cursor:pointer; transition:transform .15s, box-shadow .15s; }
+  .fab-btn:hover { transform:translateY(-2px); }
+  .fab-kakao { width:54px; height:54px; border-radius:50%; justify-content:center; background:#FEE500; box-shadow:0 4px 14px rgba(0,0,0,.2); }
+  .fab-kakao:hover { box-shadow:0 7px 20px rgba(0,0,0,.28); }
+  .fab-call { background:#E6007E; border-radius:32px; padding:5px 6px 5px 16px; gap:10px; box-shadow:0 4px 14px rgba(230,0,126,.35); }
+  .fab-call:hover { box-shadow:0 7px 22px rgba(230,0,126,.45); }
+  .fab-num { font-size:14px; font-weight:800; color:#fff; letter-spacing:-.2px; white-space:nowrap; }
+  .fab-ico { font-size:22px; line-height:1; }
+  .fab-svg { width:21px; height:21px; display:block; color:#7B2FF7; }
+  @media (max-width:640px) { .fab-svg { width:22px; height:22px; } }
+  .fab-call .fab-ico { width:44px; height:44px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-size:19px; }
+  @media (max-width:640px) {
+    .fab-cta { right:12px; bottom:14px; gap:8px; }
+    .fab-kakao { width:50px; height:50px; }
+    .fab-kakao .fab-ico { font-size:20px; }
+    .fab-num { display:none; }
+    .fab-call { padding:0; width:50px; height:50px; border-radius:50%; justify-content:center; background:#fff; border:2.5px solid #7B2FF7; box-shadow:0 4px 14px rgba(0,0,0,.16); }
+    .fab-call .fab-ico { width:50px; height:50px; background:transparent; font-size:20px; }
   }
-  .cta-kakao { background: #FEE500; color: #3A1D1D; }
-  .cta-kakao:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.28); }
-  .cta-kakao .talk-bubble { font-size: 18px; line-height: 1; }
-  .cta-call { background: #E6007E; color: #fff; }
-  .cta-call:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(230,0,126,0.45); }
-  .cta-call .uplus-badge { font-size: 13px; font-weight: 900; color: #fff; background: rgba(255,255,255,0.25); padding: 2px 6px; border-radius: 4px; }
 
   /* 이벤트 네온 글로우 */
   .phone-card.event-card {
@@ -559,15 +565,13 @@ body.edit-mode .card-move { display:flex; }
     </div></div><div class="add-card-btn">＋ 상품 카드 추가</div></div>
 
 
-<div class="bottom-cta">
-  <a class="cta-kakao" href="https://pf.kakao.com/_xdxaxlxfX/chat">
-    <div class="talk-bubble">💬</div>
-
-    카톡 문의하기
+<div class="fab-cta" id="fabCta">
+  <a class="fab-btn fab-kakao" href="https://pf.kakao.com/_xdxaxlxfX/chat" target="_blank" rel="noopener" aria-label="카카오톡 상담">
+    <span class="fab-ico">💬</span>
   </a>
-  <a class="cta-call" href="tel:0505-674-5986">
-    <span class="uplus-badge">U+</span>
-    전화 문의하기
+  <a class="fab-btn fab-call" href="tel:0505-674-5986" aria-label="전화 상담 0505-674-5986">
+    <span class="fab-num">0505-674-5986</span>
+    <span class="fab-ico"><svg class="fab-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
   </a>
 </div>
 
@@ -1417,4 +1421,22 @@ function saveHTML() {
 })();
 </script>
 <!-- ▲▲▲ ?open= 처리 ▲▲▲ -->
+<script>
+(function(){
+  function upd(){
+    var f = document.querySelector('.fab-cta');
+    if (!f) return;
+    var doc = document.documentElement;
+    var h = Math.max(document.body.scrollHeight, doc.scrollHeight);
+    /* 스크롤할 분량이 거의 없는 짧은 페이지에서는 숨기지 않는다 */
+    if (h - window.innerHeight < 300) { f.classList.remove('fab-hide'); return; }
+    var nearBottom = (window.innerHeight + window.scrollY) >= (h - 170);
+    if (nearBottom) f.classList.add('fab-hide'); else f.classList.remove('fab-hide');
+  }
+  window.addEventListener('scroll', upd, {passive:true});
+  window.addEventListener('resize', upd);
+  document.addEventListener('DOMContentLoaded', upd);
+  upd();
+})();
+</script>
 </body></html>
