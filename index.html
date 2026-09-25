@@ -255,6 +255,16 @@ function wcsFire(){ if(window.wcs && window.wcs_do) wcs_do(); }
       gap: 3px;
       transition: background 0.15s;
     }
+    /* 카톡·전화는 하단 고정바와 상단 헤더에 이미 있어 PC 화면에 세 번 겹친다.
+       퀵메뉴에서는 빼고 TOP 만 남긴다.
+       되살리려면 바로 아래 한 줄을 지우면 된다. */
+    .side-quickmenu .quick-item:not(.quick-top) { display: none; }
+    /* TOP 하나만 남으므로 흰 상자를 없애고 버튼만 떠 있게 한다 */
+    .side-quickmenu { background: none; box-shadow: none; border: none; top: auto; bottom: 110px; transform: none; }
+    .side-quickmenu .quick-top {
+      width: 48px; height: 48px; border-radius: 50%;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.2);
+    }
     .side-quickmenu .quick-item:last-child { border-bottom: none; }
     .side-quickmenu .quick-item:hover { background: #fff5fa; }
     .side-quickmenu .quick-icon { font-size: 20px; line-height: 1; }
@@ -1644,7 +1654,15 @@ function showNextToast() {
   }, item.delay);
 }
 
+/* 신청 알림 토스트 — 지금은 꺼둔다.
+   표시되는 이름·기기가 실제 신청 내역이 아니라 임의로 만들어진 값이라,
+   손님이 사실로 받아들이면 표시광고법상 문제가 될 수 있다.
+   나중에 구글 시트의 실제 신청 내역을 읽어와 띄우도록 바꾼 뒤 켜면 된다.
+   다시 켜려면 아래 false 를 true 로 바꾸면 된다. */
+const TOAST_ON = false;
+
 window.addEventListener('DOMContentLoaded', () => {
+  if (!TOAST_ON) return;
   toastQueue = buildToastQueue();
   showNextToast();
 });
