@@ -674,6 +674,8 @@ window.__reviews = {
     padding:14px 20px; font-size:15px; font-weight:800; cursor:pointer; font-family:inherit;
     white-space:nowrap;
   }
+  /* 고정바 버튼은 예약이므로 브랜드 분홍으로 (카톡 노란색과 구분) */
+  .mbar .b-book { background:#E6007E !important; color:#fff !important; }
   /* 영수증의 상담 버튼이 화면에 들어오면 고정바는 물러난다 */
   .mbar { transition:transform .25s ease, opacity .25s ease; }
   .mbar.hide { transform:translateY(110%); opacity:0; pointer-events:none; }
@@ -1088,7 +1090,9 @@ function render(){
     '</div></div>' +
     '<div class="mbar">' +
       '<div style="flex:1;min-width:0"><div class="k">월 예상 금액</div><div class="v num" id="mbarPrice">-</div></div>' +
-      '<button class="b" id="mbarBtn" onclick="kakaoConsult()">💬 카톡상담</button>' +
+      /* 상단 헤더와 아래 버튼 줄에 이미 카톡이 있어 세 번 겹친다.
+         스크롤 중에도 늘 보이는 자리이므로, 주된 행동인 '예약'을 둔다. */
+      '<button class="b b-book" id="mbarBtn" onclick="openBookModal()">📅 상담 예약</button>' +
     '</div>' +
     '<div class="toast" id="toast"></div>';
 
@@ -1354,8 +1358,12 @@ function paintReceipt(){
       '<div class="btn-pair">' +
         '<button class="btn-sub btn-sub-kakao" onclick="kakaoConsult()">💬 카톡 문의</button>' +
         '<a class="btn-tel" href="tel:' + TEL + '">📞 전화상담</a>' +
-      '</div>' +
-      '<button class="btn-sub btn-save-wide" id="btnSave" onclick="saveEstimate(this)">📷 ' + shareLabel() + '</button>';
+      '</div>';
+      /* 조건 이미지 저장 버튼은 뺐다.
+         예약하면 조건이 자동으로 전달되고 카톡도 자동 복사되므로 쓸 일이 거의 없고,
+         인앱 브라우저에서는 저장이 안 돼 오히려 헷갈린다.
+         되살리려면 아래 한 줄을 위 코드 뒤에 다시 붙이면 된다.
+         + '<button class="btn-sub btn-save-wide" id="btnSave" onclick="saveEstimate(this)">📷 ' + shareLabel() + '</button>' */
   } else {
     /* 상담 시간이 지난 뒤 들어온 손님. 전화는 못 받고 카톡 답장도 아침에나 가므로
        그냥 나가버리기 쉽다. 연락처만 남기게 해서 다음 날 먼저 연락드린다. */
@@ -1366,8 +1374,8 @@ function paintReceipt(){
          '<button class="btn-apply btn-book" onclick="openBookModal()">상담 예약하기</button>' +
          '<div class="btn-hint">선택하신 조건이 <b>그대로 전달</b>됩니다.<br class="hint-br">다시 설명하지 않으셔도 됩니다</div>' +
          '<div class="btn-pair">' +
-           '<button class="btn-sub" onclick="kakaoConsult()">💬 카톡 남기기</button>' +
-           '<button class="btn-sub" id="btnSave" onclick="saveEstimate(this)">📷 ' + shareLabel() + '</button>' +
+           '<button class="btn-sub btn-sub-kakao" onclick="kakaoConsult()">💬 카톡 남기기</button>' +
+           '<a class="btn-tel" href="tel:' + TEL + '">📞 전화상담</a>' +
          '</div>';
   }
   h += '</div>';
@@ -1589,7 +1597,9 @@ var _barUpd;   /* = null 을 붙이면 안 된다 — 로드 중 이미 연결�
 function watchMainBtn(){
   if (!_barUpd) {
     _barUpd = function(){
-      const t = document.querySelector('.btn-kakao-main');
+      /* 영수증 안의 주 버튼이 화면에 들어오면 고정바는 물러난다.
+         주 버튼이 예약(btn-book-main)이 되었으므로 둘 다 찾는다. */
+      const t = document.querySelector('.btn-book-main, .btn-book, .btn-kakao-main');
       const bar = document.querySelector('.mbar');
       if (!t || !bar) return;
       const r = t.getBoundingClientRect();
