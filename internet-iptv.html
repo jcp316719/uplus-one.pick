@@ -157,6 +157,11 @@
   }
   .card-kakao:hover { background:#f5dc00; }
   .card-kakao:active { background:#e8d000; }
+  .card-kakao-hint {
+    font-size:10.5px; color:#9a9aa3; font-weight:600;
+    text-align:center; line-height:1.55; margin-top:7px;
+  }
+  .card-kakao-hint b { color:#B3005F; font-weight:700; }
 
   /* 편집 */
   .editable { outline:none; cursor:default; }
@@ -197,10 +202,19 @@
   .cta-kakao { background:#FEE500; color:#3A1D1D; }
   .cta-call { background:#E6007E; color:#fff; }
   .cta-call:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(230,0,126,0.45); }
-  /* 카드마다 카톡 문의 버튼이 생겨 하단바의 카톡은 중복이다.
-     노란 버튼이 두 개씩 겹쳐 보여 전화만 남긴다.
-     되살리려면 아래 한 줄을 지우면 된다. */
-  .bottom-cta .cta-kakao { display:none; }
+  /* 목록 끝 통화 안내 — 화면에 떠다니는 버튼을 대신한다 */
+  .call-note {
+    max-width:1200px; margin:0 auto 60px; padding:22px 16px 26px;
+    text-align:center;
+  }
+  .call-note-t { font-size:12.5px; color:#8a8a95; font-weight:700; }
+  .call-note-num {
+    display:inline-block; margin-top:7px; font-size:24px; font-weight:900;
+    color:#E6007E; letter-spacing:-0.5px; text-decoration:none;
+    font-variant-numeric:tabular-nums;
+  }
+  .call-note-s { font-size:11.5px; color:#aaa; font-weight:600; margin-top:6px; }
+  @media (min-width:768px) { .call-note { padding-bottom:40px; } }
 
   body.edit-mode 
   
@@ -299,15 +313,12 @@
 <div class="plan-list" id="planList"></div>
 
 <!-- 하단 CTA -->
-<div class="bottom-cta">
-  <a class="cta-kakao" href="https://pf.kakao.com/_xdxaxlxfX/chat">
-    <div class="talk-bubble">💬</div>
-    카톡 문의하기
-  </a>
-  <a class="cta-call" href="tel:0505-674-5986">
-    <span class="uplus-badge">U+</span>
-    전화 문의하기
-  </a>
+<!-- 떠다니는 버튼 대신 목록 끝에 두는 통화 안내.
+     화면을 가리지 않고, 카드마다 있는 카톡 문의 다음 선택지로 자연스럽다. -->
+<div class="call-note">
+  <div class="call-note-t">통화 상담을 원하시면</div>
+  <a class="call-note-num" href="tel:0505-674-5986">0505-674-5986</a>
+  <div class="call-note-s">매일 10:00 ~ 20:00 · 연중무휴</div>
 </div>
 
 <script>
@@ -591,7 +602,9 @@ function buildCard(card) {
     '</div>' +
     /* 상품명이 길고 생소해서 손님이 외워 옮기기 어렵다.
        누르면 이 카드의 조건이 통째로 복사된 채 카카오톡 채널이 열린다. */
-    '<button type="button" class="card-kakao" onclick="askAbout(\'' + card.id + '\')">💬 이 상품 문의하기</button>';
+    '<button type="button" class="card-kakao" onclick="askAbout(\'' + card.id + '\')">💬 이 상품 문의하기</button>' +
+    /* 복사된 줄 모르면 손님이 그냥 인사만 하고 끝난다 */
+    '<div class="card-kakao-hint">상품 조건이 <b>자동 복사</b>됩니다 · 채팅창에 <b>붙여넣기</b>만 하세요</div>';
 
   if (editMode) div.querySelector('.card-delete-btn').style.display = 'flex';
   return div;
