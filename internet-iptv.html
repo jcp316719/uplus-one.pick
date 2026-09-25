@@ -49,9 +49,10 @@
   .filter-btn.active { background:#111; border-color:#111; color:#fff; }
 
   /* 카드 리스트 */
-  .plan-list { padding:16px 16px 100px; display:flex; flex-direction:column; gap:12px; }
+  /* 카드 배치도 다른 상품 페이지와 같게 맞춘다 (모바일 1열 / PC 3열, 간격 16·24) */
+  .plan-list { padding:20px 16px 100px; display:grid; grid-template-columns:1fr; gap:16px; }
   @media (min-width:768px) {
-    .plan-list { display:grid; grid-template-columns:repeat(2,1fr); padding:24px 32px 100px; gap:16px; }
+    .plan-list { display:grid; grid-template-columns:repeat(3,1fr); padding:24px 32px 100px; gap:24px; max-width:1200px; margin:0 auto; }
     .filter-wrap { top:57px; }
   }
   @media (min-width:1024px) { .plan-list { grid-template-columns:repeat(3,1fr); } }
@@ -61,7 +62,8 @@
   body.edit-mode .add-card-btn { display:block; }
 
   /* 카드 */
-  .plan-card { background:#fff; border-radius:20px; box-shadow:0 2px 14px rgba(0,0,0,0.07); position:relative; display:flex; flex-direction:column; padding:20px; transition:box-shadow 0.2s; overflow:hidden; }
+  /* 모서리·그림자는 삼성·아이폰·홈캠 카드와 같은 값으로 맞춘다 (16px / 2px 12px) */
+  .plan-card { background:#fff; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.07); position:relative; display:flex; flex-direction:column; padding:20px; transition:box-shadow 0.2s; overflow:hidden; }
   .plan-card:hover { box-shadow:0 4px 20px rgba(0,0,0,0.11); }
 
   /* 이벤트 네온 글로우 - 오렌지→레드 */
@@ -103,15 +105,20 @@
 
   /* 배지 */
   .badge-row { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
-  .badge { font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; color:#fff; user-select:none; }
-  .badge-best  { background:#E6007E; }
-  .badge-new   { background:#7c3aed; }
-  .badge-hot   { background:#ef4444; }
-  .badge-event { background:linear-gradient(135deg,#ff6b00,#E6007E); animation:badge-pulse 1.5s infinite; }
-  @keyframes badge-pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.7; } }
-  .badge-alone { background:#0ea5e9; }
+  /* 삼성·아이폰 카드의 배지와 같은 느낌으로 맞춘다.
+     진한 바탕 + 흰 글자 알약 → 옅은 바탕 + 진한 글자 둥근 사각형 */
+  .badge {
+    font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:7px;
+    line-height:1.35; user-select:none; white-space:nowrap;
+  }
+  .badge-best  { background:#fdeaf3; color:#B3005F; }
+  .badge-new   { background:#efe9fb; color:#4A3A9E; }
+  .badge-hot   { background:#fdeaf3; color:#B3005F; }
+  .badge-event { background:#fbe9de; color:#9B3D10; animation:badge-pulse 1.5s infinite; }
+  @keyframes badge-pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.65; } }
+  .badge-alone { background:#e4f1fb; color:#0B4F86; }
   body.edit-mode .badge { cursor:pointer; }
-  .badge-add-btn { display:none; font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; background:#e2e8f0; color:#666; border:none; cursor:pointer; }
+  .badge-add-btn { display:none; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:7px; background:#eeeef0; color:#666; border:none; cursor:pointer; }
   body.edit-mode .badge-add-btn { display:inline-block; }
   .event-period { font-size:11px; font-weight:700; color:#ff4500; background:#fff8f5; border:1.5px solid #ff4500; border-radius:20px; padding:4px 10px; white-space:nowrap; }
   .event-period:empty { display:none; }
@@ -132,14 +139,24 @@
   /* 상품명 */
   .plan-name-el { font-size:15px; font-weight:800; color:#111; display:block; margin-bottom:2px; line-height:1.4; }
 
-  /* 가격 */
-  .price-block { text-align:right; margin:12px 0 0; }
+  /* 가격 — 상품명이 1줄이냐 2줄이냐에 따라 가격·버튼 높이가 어긋난다.
+     가격 블록을 아래로 밀어붙여 어느 카드든 같은 줄에 오게 한다. */
+  .price-block { text-align:right; margin:12px 0 0; margin-top:auto; padding-top:12px; }
   .price-normal { font-size:13px; color:#aaa; text-decoration:line-through; margin-bottom:2px; }
   .price-combo-label { font-size:12px; color:#555; margin-bottom:2px; }
   .price-combo-val { font-size:22px; font-weight:900; color:#111; }
   .price-combo-val em { font-style:normal; color:#E6007E; }
   .price-period { font-size:11px; color:#aaa; margin-top:2px; }
   .price-gift { font-size:16px; color:#7c3aed; font-weight:900; margin-top:8px; letter-spacing:-0.3px; }
+
+  /* 카드별 문의 버튼 — 누르면 이 상품 조건이 복사된 채 카카오톡이 열린다 */
+  .card-kakao {
+    width:100%; margin-top:14px; padding:12px; border:none; border-radius:11px;
+    background:#FEE500; color:#3c1e1e; font-size:13.5px; font-weight:800;
+    cursor:pointer; font-family:inherit; transition:background .14s;
+  }
+  .card-kakao:hover { background:#f5dc00; }
+  .card-kakao:active { background:#e8d000; }
 
   /* 편집 */
   .editable { outline:none; cursor:default; }
@@ -180,6 +197,10 @@
   .cta-kakao { background:#FEE500; color:#3A1D1D; }
   .cta-call { background:#E6007E; color:#fff; }
   .cta-call:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(230,0,126,0.45); }
+  /* 카드마다 카톡 문의 버튼이 생겨 하단바의 카톡은 중복이다.
+     노란 버튼이 두 개씩 겹쳐 보여 전화만 남긴다.
+     되살리려면 아래 한 줄을 지우면 된다. */
+  .bottom-cta .cta-kakao { display:none; }
 
   body.edit-mode 
   
@@ -567,10 +588,57 @@ function buildCard(card) {
       '<div class="price-combo-val">월 <em class="editable" contenteditable="' + editMode + '" onblur="saveField(\'' + card.id + '\',\'comboPrice\',this.textContent)">' + card.comboPrice + '</em></div>' +
       '<div class="price-period editable" contenteditable="' + editMode + '" onblur="saveField(\'' + card.id + '\',\'period\',this.textContent)">' + card.period + '</div>' +
       '<div class="price-gift editable" contenteditable="' + editMode + '" onblur="saveField(\'' + card.id + '\',\'gift\',this.textContent)">' + card.gift + '</div>' +
-    '</div>';
+    '</div>' +
+    /* 상품명이 길고 생소해서 손님이 외워 옮기기 어렵다.
+       누르면 이 카드의 조건이 통째로 복사된 채 카카오톡 채널이 열린다. */
+    '<button type="button" class="card-kakao" onclick="askAbout(\'' + card.id + '\')">💬 이 상품 문의하기</button>';
 
   if (editMode) div.querySelector('.card-delete-btn').style.display = 'flex';
   return div;
+}
+
+/* ── 이 상품 문의하기 ──
+   카드 조건을 복사해 두고 카카오톡 채널을 연다.
+   손님은 붙여넣기만 하면 되고, 어떤 상품인지 다시 설명할 필요가 없다. */
+var KAKAO_CHAT_URL = 'https://pf.kakao.com/_xdxaxlxfX/chat';
+
+function askAbout(cardId) {
+  var card = null;
+  for (var i = 0; i < cards.length; i++) { if (cards[i].id === cardId) { card = cards[i]; break; } }
+  if (!card) return;
+
+  var lines = ['[U+ Pick 인터넷 문의]', '상품 : ' + card.name];
+  if (card.normalPrice) lines.push('정가 : ' + card.normalPrice);
+  if (card.comboPrice)  lines.push('결합가 : ' + card.comboPrice + (card.comboLabel ? ' (' + card.comboLabel + ')' : ''));
+  if (card.period)      lines.push('약정 : ' + card.period);
+  if (card.gift)        lines.push('사은품 : ' + card.gift);
+  lines.push('', '문의드립니다.');
+
+  copyPlanText(lines.join('\n'));
+
+  var w = null;
+  try { w = window.open(KAKAO_CHAT_URL, '_blank'); } catch (e) {}
+  if (!w || w.closed || typeof w.closed === 'undefined') location.href = KAKAO_CHAT_URL;
+}
+
+function copyPlanText(t) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).catch(function () { legacyCopyPlan(t); });
+    } else { legacyCopyPlan(t); }
+  } catch (e) { legacyCopyPlan(t); }
+}
+function legacyCopyPlan(t) {
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = t;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  } catch (e) {}
 }
 
 /* 렌더 */
