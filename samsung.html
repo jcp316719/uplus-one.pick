@@ -195,6 +195,46 @@
   .price-row-label { font-size:13px; color:#555; font-weight:500; }
   .price-row-value { font-size:13px; color:#111; font-weight:700; }
   .price-row-value.discount { color:#E6007E; }
+  /* ── 요금제별 이동사지원금 ──────────────────────────────────
+     요금제가 2개 이상인 상품(아이폰 18 PRO 등)만 줄이 생긴다.
+     위의 '이동사지원금' 칸은 카드에 보이는 대표 금액(맨 앞 요금제 기준)이고,
+     아래 줄들이 상세페이지가 실제로 쓰는 요금제별 금액이다.
+     손님에게는 보이지 않고 관리자 편집 모드에서만 나타난다. */
+  .subsidy-plan-rows { display:none; }
+  body.edit-mode .subsidy-plan-rows { display:block; }
+  .sp-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:7px 0; border-bottom:1px solid #f2f2f5;
+  }
+  .sp-label { font-size:11px; color:#9a9aa5; font-weight:700; letter-spacing:-.2px; }
+  .sp-val {
+    font-size:12.5px; font-weight:800; color:#7a7a85;
+    min-width:72px; text-align:right; outline:none;
+    border-bottom:1.5px dashed #ccc; border-radius:2px; cursor:text;
+  }
+  .sp-val:focus { background:#fff5fa; }
+
+  /* ── 기기변경 전용 U+pick 할인 ──────────────────────────────
+     U+pick 할인은 번호이동(=신규)과 기기변경 금액이 다를 수 있다.
+     위의 'U+ pick 할인' 칸은 번호이동 값(oneDiscount)이고,
+     아래 칸은 기기변경 값(oneDiscountChange)이다.
+     비워두면 상세페이지가 번호이동 값을 그대로 쓴다.
+     손님에게는 보이지 않고 관리자 편집 모드에서만 나타난다. */
+  .upick-chg-row { display:none; }
+  body.edit-mode .upick-chg-row {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:7px 0 9px; margin-top:-4px;
+    border-bottom:1px solid #f2f2f5;
+  }
+  .upick-chg-label { font-size:11px; color:#9a9aa5; font-weight:700; letter-spacing:-.2px; }
+  .upick-chg-val {
+    font-size:12.5px; font-weight:800; color:#7a7a85;
+    min-width:72px; text-align:right; outline:none;
+    border-bottom:1.5px dashed #ccc; border-radius:2px; cursor:text;
+  }
+  .upick-chg-val:focus { background:#fff5fa; }
+  .upick-chg-val:empty::before { content:'번호이동과 동일'; color:#c5c5cc; font-weight:700; font-size:11px; }
+
   .total-row { padding-top:12px; }
   .total-label-bold { font-size:15px; font-weight:900; color:#111; }
   .total-val { font-size:17px; font-weight:900; color:#111; }
@@ -534,9 +574,14 @@ body.edit-mode .card-move { display:flex; }
         <span class="price-row-label">이동사지원금</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1784946305392', 0, 'subsidy')" onblur="savePriceField('card-1784946305392', 0, 'subsidy', this.textContent)">-500,000원</span>
       </div>
+      <div class="subsidy-plan-rows"></div>
       <div class="price-row-item">
         <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1784946305392', 0, 'oneDiscount')" onblur="savePriceField('card-1784946305392', 0, 'oneDiscount', this.textContent)">-600,000원</span>
+      </div>
+      <div class="upick-chg-row">
+        <span class="upick-chg-label">└ 기기변경 U+pick 할인</span>
+        <span class="upick-chg-val editable" contenteditable="false" onblur="saveUpickChange('card-1784946305392', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></span>
       </div>
       <hr class="divider">
       <div class="price-row-item total-row">
@@ -590,9 +635,14 @@ body.edit-mode .card-move { display:flex; }
         <span class="price-row-label">이동사지원금</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1784946557940', 0, 'subsidy')" onblur="savePriceField('card-1784946557940', 0, 'subsidy', this.textContent)">-500,000원</span>
       </div>
+      <div class="subsidy-plan-rows"></div>
       <div class="price-row-item">
         <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1784946557940', 0, 'oneDiscount')" onblur="savePriceField('card-1784946557940', 0, 'oneDiscount', this.textContent)">-450,000원</span>
+      </div>
+      <div class="upick-chg-row">
+        <span class="upick-chg-label">└ 기기변경 U+pick 할인</span>
+        <span class="upick-chg-val editable" contenteditable="false" onblur="saveUpickChange('card-1784946557940', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></span>
       </div>
       <hr class="divider">
       <div class="price-row-item total-row">
@@ -646,9 +696,14 @@ body.edit-mode .card-move { display:flex; }
         <span class="price-row-label">이동사지원금</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1784946596418', 0, 'subsidy')" onblur="savePriceField('card-1784946596418', 0, 'subsidy', this.textContent)">-500,000원</span>
       </div>
+      <div class="subsidy-plan-rows"></div>
       <div class="price-row-item">
         <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1784946596418', 0, 'oneDiscount')" onblur="savePriceField('card-1784946596418', 0, 'oneDiscount', this.textContent)">-450,000원</span>
+      </div>
+      <div class="upick-chg-row">
+        <span class="upick-chg-label">└ 기기변경 U+pick 할인</span>
+        <span class="upick-chg-val editable" contenteditable="false" onblur="saveUpickChange('card-1784946596418', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></span>
       </div>
       <hr class="divider">
       <div class="price-row-item total-row">
@@ -704,9 +759,14 @@ body.edit-mode .card-move { display:flex; }
         <span class="price-row-label">이동사지원금</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1', 0, 'subsidy')" onblur="savePriceField('card-1', 0, 'subsidy', this.textContent)">-600,000원</span>
       </div>
+      <div class="subsidy-plan-rows"></div>
       <div class="price-row-item">
         <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1', 0, 'oneDiscount')" onblur="savePriceField('card-1', 0, 'oneDiscount', this.textContent)">-500,000원</span>
+      </div>
+      <div class="upick-chg-row">
+        <span class="upick-chg-label">└ 기기변경 U+pick 할인</span>
+        <span class="upick-chg-val editable" contenteditable="false" onblur="saveUpickChange('card-1', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></span>
       </div>
       <hr class="divider">
       <div class="price-row-item total-row">
@@ -761,9 +821,14 @@ body.edit-mode .card-move { display:flex; }
         <span class="price-row-label">이동사지원금</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-2', 0, 'subsidy')" onblur="savePriceField('card-2', 0, 'subsidy', this.textContent)">-600,000원</span>
       </div>
+      <div class="subsidy-plan-rows"></div>
       <div class="price-row-item">
         <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-2', 0, 'oneDiscount')" onblur="savePriceField('card-2', 0, 'oneDiscount', this.textContent)">-450,000원</span>
+      </div>
+      <div class="upick-chg-row">
+        <span class="upick-chg-label">└ 기기변경 U+pick 할인</span>
+        <span class="upick-chg-val editable" contenteditable="false" onblur="saveUpickChange('card-2', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></span>
       </div>
       <hr class="divider">
       <div class="price-row-item total-row">
@@ -818,9 +883,14 @@ body.edit-mode .card-move { display:flex; }
         <span class="price-row-label">이동사지원금</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-3', 0, 'subsidy')" onblur="savePriceField('card-3', 0, 'subsidy', this.textContent)">-600,000원</span>
       </div>
+      <div class="subsidy-plan-rows"></div>
       <div class="price-row-item">
         <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-3', 0, 'oneDiscount')" onblur="savePriceField('card-3', 0, 'oneDiscount', this.textContent)">-450,000원</span>
+      </div>
+      <div class="upick-chg-row">
+        <span class="upick-chg-label">└ 기기변경 U+pick 할인</span>
+        <span class="upick-chg-val editable" contenteditable="false" onblur="saveUpickChange('card-3', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></span>
       </div>
       <hr class="divider">
       <div class="price-row-item total-row">
@@ -872,9 +942,14 @@ body.edit-mode .card-move { display:flex; }
         <span class="price-row-label">이동사지원금</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-9', 0, 'subsidy')" onblur="savePriceField('card-9', 0, 'subsidy', this.textContent)">-400,000원</span>
       </div>
+      <div class="subsidy-plan-rows"></div>
       <div class="price-row-item">
         <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-9', 0, 'oneDiscount')" onblur="savePriceField('card-9', 0, 'oneDiscount', this.textContent)">-128,000원</span>
+      </div>
+      <div class="upick-chg-row">
+        <span class="upick-chg-label">└ 기기변경 U+pick 할인</span>
+        <span class="upick-chg-val editable" contenteditable="false" onblur="saveUpickChange('card-9', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></span>
       </div>
       <hr class="divider">
       <div class="price-row-item total-row">
@@ -927,9 +1002,14 @@ body.edit-mode .card-move { display:flex; }
         <span class="price-row-label">이동사지원금</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1783495031454', 0, 'subsidy')" onblur="savePriceField('card-1783495031454', 0, 'subsidy', this.textContent)">-700,000원</span>
       </div>
+      <div class="subsidy-plan-rows"></div>
       <div class="price-row-item">
         <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1783495031454', 0, 'oneDiscount')" onblur="savePriceField('card-1783495031454', 0, 'oneDiscount', this.textContent)">-653,000원</span>
+      </div>
+      <div class="upick-chg-row">
+        <span class="upick-chg-label">└ 기기변경 U+pick 할인</span>
+        <span class="upick-chg-val editable" contenteditable="false" onblur="saveUpickChange('card-1783495031454', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></span>
       </div>
       <hr class="divider">
       <div class="price-row-item total-row">
@@ -977,9 +1057,14 @@ body.edit-mode .card-move { display:flex; }
         <span class="price-row-label">이동사지원금</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1785997680311', 0, 'subsidy')" onblur="savePriceField('card-1785997680311', 0, 'subsidy', this.textContent)">-500,000원</span>
       </div>
+      <div class="subsidy-plan-rows"></div>
       <div class="price-row-item">
         <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="false" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, 'card-1785997680311', 0, 'oneDiscount')" onblur="savePriceField('card-1785997680311', 0, 'oneDiscount', this.textContent)">-500,000원</span>
+      </div>
+      <div class="upick-chg-row">
+        <span class="upick-chg-label">└ 기기변경 U+pick 할인</span>
+        <span class="upick-chg-val editable" contenteditable="false" onblur="saveUpickChange('card-1785997680311', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></span>
       </div>
       <hr class="divider">
       <div class="price-row-item total-row">
@@ -1081,8 +1166,93 @@ function initCards() {
 // ── 편집 모드 토글 ──
 function onEditBtnClick() { toggleEdit(!editMode); }
 
+
+/* ── 기기변경 전용 U+pick 할인 ───────────────────────────────────
+   번호이동 값과 기기변경 값이 다를 때만 채운다.
+   비우면 키를 지워서, 상세페이지가 번호이동 값을 그대로 쓰게 둔다.
+   화면에 보이는 칸은 편집 모드에서만 나타난다. */
+
+/* ── 요금제별 이동사지원금 ───────────────────────────────────────
+   요금제마다 지원금이 다른 상품을 위한 칸.
+   카드 위쪽 '이동사지원금'은 맨 앞 요금제 기준 대표 금액이고,
+   상세페이지는 아래 요금제별 금액을 본다.
+   요금제가 하나뿐인 상품에서는 줄이 생기지 않는다. */
+function _spEsc(t) {
+  return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function _spPlans(card) {
+  var st = _ucStorage(card);
+  var m = st && st.subsidyByPlan;
+  if (!m) return [];
+  var names = (card.planList && card.planList.length) ? card.planList.slice() : Object.keys(m);
+  return names.filter(function (n) { return m[n] !== undefined; });
+}
+function paintSubsidyPlans(card) {
+  if (!card) return;
+  var cardEl = document.getElementById(card.id);
+  if (!cardEl) return;
+  var box = cardEl.querySelector('.subsidy-plan-rows');
+  if (!box) return;
+  var st = _ucStorage(card), names = _spPlans(card);
+  if (!names.length) { box.innerHTML = ''; return; }
+  box.innerHTML = names.map(function (n, i) {
+    return '<div class="sp-row"><span class="sp-label">└ ' + _spEsc(n) + '</span>' +
+      '<span class="sp-val editable" contenteditable="' + (editMode ? 'true' : 'false') + '" ' +
+      'onblur="saveSubsidyPlan(\'' + card.id + '\', ' + i + ', this)" ' +
+      'onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}">' +
+      _spEsc(st.subsidyByPlan[n] || '') + '</span></div>';
+  }).join('');
+}
+function saveSubsidyPlan(cardId, idx, el) {
+  var card = cards.find(function (c) { return c.id === cardId; });
+  if (!card) return;
+  var st = _ucStorage(card), names = _spPlans(card), n = names[idx];
+  if (!st || !n) return;
+  var digits = String(el.textContent).replace(/[^0-9]/g, '');
+  st.subsidyByPlan[n] = formatAmt(Number(digits || 0), true);
+  /* 카드에 보이는 대표 지원금은 맨 앞 요금제 기준으로 맞춘다 */
+  st.subsidy = st.subsidyByPlan[names[0]];
+  var cardEl = document.getElementById(cardId);
+  var vals = cardEl ? cardEl.querySelectorAll('.price-row-value') : null;
+  if (vals && vals[1]) vals[1].textContent = st.subsidy;
+  calcInstallmentDOM(cardId, card.selectedStorage || 0);
+  paintSubsidyPlans(card);
+}
+
+function _ucStorage(card) {
+  if (!card || !card.storages) return null;
+  var i = (card.selectedStorage !== undefined) ? card.selectedStorage : 0;
+  return card.storages[i] || null;
+}
+function paintUpickChange(card) {
+  if (!card) return;
+  var cardEl = document.getElementById(card.id);
+  if (!cardEl) return;
+  var el = cardEl.querySelector('.upick-chg-val');
+  if (!el) return;
+  var st = _ucStorage(card);
+  var v = st ? st.oneDiscountChange : '';
+  el.textContent = (v === undefined || v === null) ? '' : v;
+}
+function paintAllUpickChange() {
+  if (typeof cards === 'undefined' || !cards) return;
+  cards.forEach(paintUpickChange);
+  cards.forEach(paintSubsidyPlans);
+}
+function saveUpickChange(cardId, el) {
+  var card = cards.find(function (c) { return c.id === cardId; });
+  if (!card) return;
+  var st = _ucStorage(card);
+  if (!st) return;
+  var digits = String(el.textContent).replace(/[^0-9]/g, '');
+  if (!digits) delete st.oneDiscountChange;
+  else st.oneDiscountChange = formatAmt(Number(digits), true);
+  paintUpickChange(card);
+}
+
 function toggleEdit(on) {
   editMode = on;
+  if (on) setTimeout(paintAllUpickChange, 0);
   document.body.classList.toggle('edit-mode', on);
   if (on) ensureMoveButtons();  // 편집 모드에서만 순서 이동 버튼 사용
   // 모든 editable 요소 contentEditable 토글
@@ -1343,6 +1513,8 @@ function openStorageSheet(cardId) {
           if (vals[0]) vals[0].textContent = st.price || '';
           if (vals[1]) vals[1].textContent = st.subsidy || '';
           if (vals[2]) vals[2].textContent = st.oneDiscount || '';
+          paintUpickChange(card);
+          paintSubsidyPlans(card);
           if (vals[3]) vals[3].textContent = st.installment || '';
         }
         // 용량별 재고소진 상태 카드에 반영 (카드 전체 soldOut이 아닌 경우에만)
@@ -1975,9 +2147,14 @@ function addNewCard() {
         <span class="price-row-label">이동사지원금</span>
         <span class="price-row-value discount editable" contenteditable="true" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, '${newId}', 0, 'subsidy')" onblur="savePriceField('${newId}', 0, 'subsidy', this.textContent)">-0원</span>
       </div>
+      <div class="subsidy-plan-rows"></div>
       <div class="price-row-item">
         <span class="price-row-label">U+ <span style="background:#E6007E;color:#fff;font-weight:500;padding:1px 8px;border-radius:10px;font-size:11px;">pick</span> 할인</span>
         <span class="price-row-value discount editable" contenteditable="true" onfocus="onPriceFocus(this)" onkeydown="onPriceKeydown(event, this, '${newId}', 0, 'oneDiscount')" onblur="savePriceField('${newId}', 0, 'oneDiscount', this.textContent)">-0원</span>
+      </div>
+      <div class="upick-chg-row">
+        <span class="upick-chg-label">└ 기기변경 U+pick 할인</span>
+        <span class="upick-chg-val editable" contenteditable="false" onblur="saveUpickChange('${newId}', this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"></span>
       </div>
       <hr class="divider">
       <div class="price-row-item total-row">
