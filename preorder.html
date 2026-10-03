@@ -390,7 +390,7 @@
     .apply-btn .ab-chip { font-size:13px; padding:5px 10px; }
   }
 </style>
-<script data-preorder="1">window.__savedPreorderData = [{"img":"images/po-261001-1.jpg","title":"아이폰18 DUO 사전예약 신청 ","date":"2026.10.16 ~ 2026.10.22","models":[],"detail":[{"type":"text","content":"사전예약 시작 후 상세페이지 제공 예정 입니다."}]},{"img":"images/po-01.jpg","models":["아이폰 18 Pro | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디","아이폰 18 Pro Max | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디"],"title":"아이폰 18PRO | MAX  사전예약신청","date":"2026.09.12 ~ 2026.09.17","detail":[{"type":"image","src":"images/po-02.jpg"},{"type":"image","src":"images/po-03.jpg"},{"type":"image","src":"images/po-04.jpg"},{"type":"image","src":"images/po-05.jpg"},{"type":"image","src":"images/po-06.jpg"}],"reservationClosed":true},{"img":"images/po-07.jpg","models":["갤럭시 Z플립8 | 256GB,512GB","갤럭시 Z폴드8 | 256GB,512GB,1TB","갤럭시 Z폴드8 울트라 | 512GB,1TB"],"title":"Galaxy Z Fold8 | Flip8 사전예약신청","date":"2026.07.28 ~ 2026.08.03","detail":[{"type":"text","content":"신청 방법: 사전예약 신청을 통해 원하시는 모델,성함,연락처를 남겨주시면 사전예약 시작과 동시에 순차적으로 안내드립니다."},{"type":"image","src":"images/po-261001-1.jpg"},{"type":"image","src":"images/po-09.jpg"},{"type":"image","src":"images/po-10.jpg"},{"type":"image","src":"images/po-11.jpg"},{"type":"image","src":"images/po-12.jpg"}],"reservationClosed":true}];</script></head>
+<script data-preorder="1">window.__savedPreorderData = [{"img":"images/po-261001-1.jpg","title":"아이폰 DUO 사전예약 신청 ","date":"2026.10.16 ~ 2026.10.22","models":[],"detail":[{"type":"text","content":"사전예약 시작 후 상세페이지 제공 예정 입니다."}]},{"img":"images/po-01.jpg","models":["아이폰 18 Pro | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디","아이폰 18 Pro Max | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디"],"title":"아이폰 18PRO | MAX  사전예약신청","date":"2026.09.12 ~ 2026.09.17","detail":[{"type":"image","src":"images/po-02.jpg"},{"type":"image","src":"images/po-03.jpg"},{"type":"image","src":"images/po-04.jpg"},{"type":"image","src":"images/po-05.jpg"},{"type":"image","src":"images/po-06.jpg"}],"reservationClosed":true},{"img":"images/po-07.jpg","models":["갤럭시 Z플립8 | 256GB,512GB","갤럭시 Z폴드8 | 256GB,512GB,1TB","갤럭시 Z폴드8 울트라 | 512GB,1TB"],"title":"Galaxy Z Fold8 | Flip8 사전예약신청","date":"2026.07.28 ~ 2026.08.03","detail":[{"type":"text","content":"신청 방법: 사전예약 신청을 통해 원하시는 모델,성함,연락처를 남겨주시면 사전예약 시작과 동시에 순차적으로 안내드립니다."},{"type":"image","src":"images/po-261001-1.jpg"},{"type":"image","src":"images/po-09.jpg"},{"type":"image","src":"images/po-10.jpg"},{"type":"image","src":"images/po-11.jpg"},{"type":"image","src":"images/po-12.jpg"}],"reservationClosed":true}];</script></head>
 <body class="">
 
 <!-- 비밀번호 모달 -->
@@ -426,7 +426,7 @@
   </div>
 </div>
 
-<div id="listView" style="display: none;">
+<div id="listView" style="display: block;">
   <div class="page-title-wrap">
     <div class="page-title-row">
       <div class="page-title">사전예약</div>
@@ -443,7 +443,7 @@
           <input type="file" accept="image/*" onchange="replaceImg(0, this)">
         </div>
         <div class="preorder-info">
-          <div class="preorder-title editable" contenteditable="false" oninput="preorderData[0].title = this.textContent">아이폰18 DUO 사전예약 신청&nbsp;</div>
+          <div class="preorder-title editable" contenteditable="false" oninput="preorderData[0].title = this.textContent">아이폰 DUO 사전예약 신청&nbsp;</div>
           <div class="preorder-date editable" contenteditable="false" oninput="preorderData[0].date = this.textContent">2026.10.16 ~ 2026.10.22</div>
           <button type="button" class="detail-edit-link" onclick="goTo(0)">상세페이지 편집 →</button>
         </div>
@@ -476,42 +476,9 @@
       </div><div class="add-card-btn">+ 카드 추가</div></div>
 </div>
 
-<div id="detailView" style="display: block;">
-      <div class="detail-wrap">
-        <button type="button" class="detail-back" onclick="goTo(null)">← 목록으로</button>
-        <div class="detail-hero" onclick="triggerDetailImg(0)">
-          <button type="button" class="reservation-toggle-btn not-closed" style="top:10px; left:10px;" onclick="event.stopPropagation(); toggleReservationClosed(0)">예약종료 처리</button>
-          <img src="images/po-261001-1.jpg" style="">
-          
-          <input type="file" accept="image/*" id="detailImgInput" onchange="replaceDetailImg(0, this)">
-        </div>
-        <div class="detail-info">
-          <div class="detail-title editable" contenteditable="false" oninput="preorderData[0].title = this.textContent">아이폰18 DUO 사전예약 신청&nbsp;</div>
-          <div class="detail-date editable" contenteditable="false" oninput="preorderData[0].date = this.textContent">2026.10.16 ~ 2026.10.22</div>
-        </div>
-        <div class="detail-blocks" id="detailBlocks">
-        <div class="detail-block" data-type="text">
-          <div class="detail-block-text editable" contenteditable="false" oninput="preorderData[0].detail[0].content = this.textContent">사전예약 시작 후 상세페이지 제공 예정 입니다.</div>
-          <button type="button" class="detail-block-del" onclick="deleteDetailBlock(0,0)">✕</button>
-        </div></div>
-        <div class="detail-block-toolbar">
-          <button type="button" onclick="addDetailTextBlock(0)">📝 텍스트 추가</button>
-          <button type="button" onclick="triggerAddDetailImage(0)">🖼️ 이미지 추가</button>
-          <input type="file" id="detailBlockImgInput-0" accept="image/*" style="display:none" onchange="handleAddDetailImage(0, this)">
-        </div>
-        <div class="detail-models-admin">
-          <span class="detail-models-label">🔔 사전예약 신청폼 <b>— 한 줄에 모델 하나</b></span>
-          <textarea class="detail-models-input" rows="4" spellcheck="false" placeholder="아이폰 18 Pro | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디
-아이폰 18 Pro Max | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디" oninput="saveModels(0, this.value)"></textarea>
-          <span class="detail-models-hint">모델명 <b>|</b> 용량 <b>|</b> 색상 순서로, 각각은 쉼표로 구분합니다.
-            용량·색상을 안 적으면 그 항목은 신청폼에 안 나옵니다.
-            전체를 비워두면 상품명이 그대로 접수됩니다.</span>
-        </div>
-        <div class="detail-cta"><button type="button" class="apply-btn is-off" disabled=""><span class="ab-l"><span class="ab-t">접수 준비중</span><span class="ab-s">10.16 접수 시작</span></span><span class="ab-chip">D-15</span></button></div>
-      </div>
-    </div>
+<div id="detailView" style="display: none;"></div>
 
-<div class="fab-cta fab-hide" id="listBottomCta" style="display:flex;">
+<div class="fab-cta" id="listBottomCta" style="display:flex;">
   <a class="fab-btn fab-kakao" href="https://pf.kakao.com/_xdxaxlxfX/chat" target="_blank" rel="noopener" aria-label="카카오톡 상담">
     <span class="fab-ico">💬</span>
   </a>
