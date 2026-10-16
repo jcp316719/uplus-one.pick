@@ -1348,9 +1348,16 @@
       files.push({ name: name, blob: blob });
       return 'images/' + name;
     };
+    /* 상세 블록은 사진 경로를 b.src 에 담는다. 예전 자료는 b.content 를 쓰기도 해서
+       두 가지를 모두 살펴본다. 한쪽만 보면 상세 사진이 분리되지 않고
+       파일 안에 그대로 남아 preorder.html 이 몇 MB 로 불어난다. */
     preorderData.forEach(function (it) {
       it.img = take(it.img);
-      (it.detail || []).forEach(function (b) { if (b.type === 'image') b.content = take(b.content); });
+      (it.detail || []).forEach(function (b) {
+        if (b.type !== 'image') return;
+        if (b.src !== undefined)     b.src = take(b.src);
+        if (b.content !== undefined) b.content = take(b.content);
+      });
     });
     return files;
   }
