@@ -2049,6 +2049,64 @@ function applyMetaTo(doc) {
   set('meta[property="og:description"]', 'content', m.desc);
 }
 
+
+/* ── 사진 분리 저장 ──────────────────────────────────────────
+   편집 중에 올린 사진은 카드 데이터 안에 통째로(base64) 들어간다.
+   그대로 저장하면 이 파일이 몇 MB 로 불어나 페이지가 느려진다.
+   저장할 때 사진만 떼어내 images/ 폴더용 파일로 따로 내려받고,
+   데이터와 화면에는 'images/sm-261017-103045-1.jpg' 같은 경로만 남긴다.
+   이름에 날짜·시각이 들어가므로 폴더에 있는 기존 파일을 덮어쓰지 않는다. */
+function stampSuffix() {
+  var d = new Date(), z = function (n) { return ('0' + n).slice(-2); };
+  return String(d.getFullYear()).slice(2) + z(d.getMonth() + 1) + z(d.getDate())
+       + '-' + z(d.getHours()) + z(d.getMinutes()) + z(d.getSeconds());
+}
+function dataUrlToBlob(url) {
+  try {
+    var i = url.indexOf(',');
+    var mime = url.slice(5, url.indexOf(';')) || 'image/jpeg';
+    var bin = atob(url.slice(i + 1));
+    var arr = new Uint8Array(bin.length);
+    for (var k = 0; k < bin.length; k++) arr[k] = bin.charCodeAt(k);
+    return new Blob([arr], { type: mime });
+  } catch (e) { return null; }
+}
+function downloadBlob(blob, filename) {
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+}
+function extractCardImages(clone) {
+  var files = [], map = {}, n = 0, stamp = stampSuffix();
+  function take(v) {
+    if (String(v || '').indexOf('data:image') !== 0) return v;
+    if (map[v]) return map[v];
+    var blob = dataUrlToBlob(v);
+    if (!blob) return v;
+    n += 1;
+    var name = 'sm-' + stamp + '-' + n + (blob.type.indexOf('png') > -1 ? '.png' : '.jpg');
+    files.push({ name: name, blob: blob });
+    map[v] = 'images/' + name;
+    return map[v];
+  }
+  /* 데이터(카드 목록) 쪽 */
+  (cards || []).forEach(function (c) {
+    (c.colors || []).forEach(function (col) {
+      if (col && col.image) col.image = take(col.image);
+    });
+  });
+  /* 화면(저장될 markup) 쪽 — 같은 사진은 같은 파일명을 쓴다 */
+  clone.querySelectorAll('img').forEach(function (el) {
+    var src = el.getAttribute('src') || '';
+    if (src.indexOf('data:image') !== 0) return;
+    var path = take(src);
+    if (path !== src) el.setAttribute('src', path);
+  });
+  return files;
+}
+
 function saveHTML() {
   const clone = document.documentElement.cloneNode(true);
   applyMetaTo(clone);   // 현재 상품 목록으로 제목·설명 갱신
@@ -2076,6 +2134,7 @@ function saveHTML() {
   });
   // cards 데이터 저장
   try {
+    const newImages = extractCardImages(clone);
     const cardsData = JSON.stringify(cards);
     const existingScript = clone.querySelector('script[data-cards]');
     if (existingScript) existingScript.remove();
@@ -2092,6 +2151,19 @@ function saveHTML() {
   a.download = (location.pathname.split('/').pop() || 'samsung.html').replace(/\?.*$/, '') || 'samsung.html';
   a.click();
   URL.revokeObjectURL(a.href);
+
+  if (typeof newImages !== 'undefined' && newImages.length) {
+    newImages.forEach(function (f, i) {
+      setTimeout(function () { downloadBlob(f.blob, f.name); }, 400 * (i + 1));
+    });
+    setTimeout(function () {
+      alert('새로 올린 사진 ' + newImages.length + '장이 따로 내려받아집니다.\n\n' +
+            newImages.map(function (f) { return '\u00b7 ' + f.name; }).join('\n') +
+            '\n\n\u2460 samsung.html 을 홈페이지 폴더에 덮어쓰세요.\n' +
+            '\u2461 사진 파일은 images 폴더에 넣으세요.\n' +
+            '\u2462 둘 다 호스팅에 올리세요.');
+    }, 400 * (newImages.length + 1));
+  }
 }
 
 // ── 새 카드 추가 ──

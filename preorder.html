@@ -390,7 +390,7 @@
     .apply-btn .ab-chip { font-size:13px; padding:5px 10px; }
   }
 </style>
-<script data-preorder="1">window.__savedPreorderData = [{"img":"images/po-261016-duo.jpg","title":"아이폰 DUO 사전예약 신청 ","date":"2026.10.16 ~ 2026.10.22","models":[],"detail":[{"type":"text","content":"사전예약 시작 후 상세페이지 제공 예정 입니다."}]},{"img":"images/po-01.jpg","models":["아이폰 18 Pro | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디","아이폰 18 Pro Max | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디"],"title":"아이폰 18PRO | MAX  사전예약신청","date":"2026.09.12 ~ 2026.09.17","detail":[{"type":"image","src":"images/po-02.jpg"},{"type":"image","src":"images/po-03.jpg"},{"type":"image","src":"images/po-04.jpg"},{"type":"image","src":"images/po-05.jpg"},{"type":"image","src":"images/po-06.jpg"}],"reservationClosed":true},{"img":"images/po-07.jpg","models":["갤럭시 Z플립8 | 256GB,512GB","갤럭시 Z폴드8 | 256GB,512GB,1TB","갤럭시 Z폴드8 울트라 | 512GB,1TB"],"title":"Galaxy Z Fold8 | Flip8 사전예약신청","date":"2026.07.28 ~ 2026.08.03","detail":[{"type":"text","content":"신청 방법: 사전예약 신청을 통해 원하시는 모델,성함,연락처를 남겨주시면 사전예약 시작과 동시에 순차적으로 안내드립니다."},{"type":"image","src":"images/po-261001-1.jpg"},{"type":"image","src":"images/po-09.jpg"},{"type":"image","src":"images/po-10.jpg"},{"type":"image","src":"images/po-11.jpg"},{"type":"image","src":"images/po-12.jpg"}],"reservationClosed":true}];</script></head>
+<script data-preorder="1">window.__savedPreorderData = [{"img":"images/po-261016-duo.jpg","title":"아이폰 DUO 사전예약 신청 ","date":"2026.10.16 ~ 2026.10.22","models":["iPhone Duo 256G 스타 화이트","iPhone Duo 512G 스타 화이트","iPhone Duo 256G 나이트 스카이","iPhone Duo 512G 나이트 스카이"],"detail":[{"type":"image","src":"images/po-261017-100624-1.jpg"},{"type":"image","src":"images/po-261017-100624-2.jpg"}]},{"img":"images/po-01.jpg","models":["아이폰 18 Pro | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디","아이폰 18 Pro Max | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디"],"title":"아이폰 18PRO | MAX  사전예약신청","date":"2026.09.12 ~ 2026.09.17","detail":[{"type":"image","src":"images/po-02.jpg"},{"type":"image","src":"images/po-03.jpg"},{"type":"image","src":"images/po-04.jpg"},{"type":"image","src":"images/po-05.jpg"},{"type":"image","src":"images/po-06.jpg"}],"reservationClosed":true},{"img":"images/po-07.jpg","models":["갤럭시 Z플립8 | 256GB,512GB","갤럭시 Z폴드8 | 256GB,512GB,1TB","갤럭시 Z폴드8 울트라 | 512GB,1TB"],"title":"Galaxy Z Fold8 | Flip8 사전예약신청","date":"2026.07.28 ~ 2026.08.03","detail":[{"type":"text","content":"신청 방법: 사전예약 신청을 통해 원하시는 모델,성함,연락처를 남겨주시면 사전예약 시작과 동시에 순차적으로 안내드립니다."},{"type":"image","src":"images/po-261001-1.jpg"},{"type":"image","src":"images/po-09.jpg"},{"type":"image","src":"images/po-10.jpg"},{"type":"image","src":"images/po-11.jpg"},{"type":"image","src":"images/po-12.jpg"}],"reservationClosed":true}];</script></head>
 <body class="">
 
 <!-- 비밀번호 모달 -->
@@ -409,7 +409,33 @@
 
 <!-- 알림 신청 모달 -->
 <div class="pw-overlay" id="notifyOverlay">
-  <div class="pw-modal"></div>
+  <div class="pw-modal">
+      <h3>🔔 사전예약 신청</h3>
+      <p>이름과 연락처를 남겨주시면<br>가장 먼저 알려드릴게요</p>
+      <input class="pw-input" id="notifyNameInput" type="text" placeholder="이름" maxlength="20" style="letter-spacing:normal; text-align:left;" oninput="clearNotifyError()">
+      <input class="pw-input" id="notifyPhoneInput" type="tel" placeholder="연락처 (예: 010-1234-5678)" maxlength="13" style="letter-spacing:normal; text-align:left;" inputmode="numeric" oninput="formatPhoneInput(this); clearNotifyError()">
+      <select class="pw-select placeholder-selected" id="notifyProductSelect" onchange="onNotifyModelChange(this)"><option value="" disabled="" selected="">관심 모델을 선택해주세요</option><option value="iPhone Duo 256G 스타 화이트" data-i="0">iPhone Duo 256G 스타 화이트</option><option value="iPhone Duo 512G 스타 화이트" data-i="1">iPhone Duo 512G 스타 화이트</option><option value="iPhone Duo 256G 나이트 스카이" data-i="2">iPhone Duo 256G 나이트 스카이</option><option value="iPhone Duo 512G 나이트 스카이" data-i="3">iPhone Duo 512G 나이트 스카이</option></select><div id="notifyOptionArea"></div>
+      <input type="text" id="notifyHoneypot" name="website" autocomplete="off" tabindex="-1" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
+      <div class="notify-consent-row">
+        <label class="notify-consent-label">
+          <input type="checkbox" id="notifyConsentCheckbox" onchange="clearNotifyError()">
+          <span>[필수] 개인정보 수집·이용 동의</span>
+        </label>
+        <button type="button" class="notify-consent-toggle" onclick="toggleConsentDetail()">보기</button>
+      </div>
+      <div class="notify-consent-detail" id="notifyConsentDetail">
+        · 수집 항목: 이름, 연락처, 관심 모델·용량·색상<br>
+        · 수집 목적: 사전예약/알림 신청 접수 및 안내<br>
+        · 보유·이용 기간: 신청 처리 완료 후 6개월간 보관 후 파기 (관련 법령에 따른 보관 의무가 있는 경우 해당 기간까지)<br>
+        · 동의를 거부하실 수 있으며, 거부 시 알림 신청이 제한됩니다.<br>
+        · 자세한 내용은 <a href="privacy.html" target="_blank" style="color:#E6007E; text-decoration:underline;">개인정보처리방침</a>을 참고해주세요.
+      </div>
+      <div class="pw-error" id="notifyError"></div>
+      <div class="pw-btn-row">
+        <button class="pw-cancel" onclick="closeNotifyModal()">취소</button>
+        <button class="pw-confirm" id="notifySubmitBtn" onclick="submitNotify()">신청하기</button>
+      </div>
+    </div>
 </div>
 
 <div class="sticky-head">
@@ -426,7 +452,7 @@
   </div>
 </div>
 
-<div id="listView" style="display: block;">
+<div id="listView" style="display: none;">
   <div class="page-title-wrap">
     <div class="page-title-row">
       <div class="page-title">사전예약</div>
@@ -476,9 +502,9 @@
       </div><div class="add-card-btn">+ 카드 추가</div></div>
 </div>
 
-<div id="detailView" style="display: none;"></div>
+<div id="detailView" style="display: block;"></div>
 
-<div class="fab-cta" id="listBottomCta" style="display:flex;">
+<div class="fab-cta fab-hide" id="listBottomCta" style="display:flex;">
   <a class="fab-btn fab-kakao" href="https://pf.kakao.com/_xdxaxlxfX/chat" target="_blank" rel="noopener" aria-label="카카오톡 상담">
     <span class="fab-ico">💬</span>
   </a>
