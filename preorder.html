@@ -390,7 +390,7 @@
     .apply-btn .ab-chip { font-size:13px; padding:5px 10px; }
   }
 </style>
-<script data-preorder="1">window.__savedPreorderData = [{"img":"images/po-261016-duo.jpg","title":"아이폰 DUO 사전예약 신청 ","date":"2026.10.16 ~ 2026.10.22","models":["iPhone Duo 256G 스타 화이트","iPhone Duo 512G 스타 화이트","iPhone Duo 256G 나이트 스카이","iPhone Duo 512G 나이트 스카이"],"detail":[{"type":"image","src":"images/po-261017-104704-1.jpg"},{"type":"image","src":"images/po-261017-104704-2.jpg"},{"type":"image","src":"images/po-261017-104704-3.jpg"}]},{"img":"images/po-01.jpg","models":["아이폰 18 Pro | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디","아이폰 18 Pro Max | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디"],"title":"아이폰 18PRO | MAX  사전예약신청","date":"2026.09.12 ~ 2026.09.17","detail":[{"type":"image","src":"images/po-02.jpg"},{"type":"image","src":"images/po-03.jpg"},{"type":"image","src":"images/po-04.jpg"},{"type":"image","src":"images/po-05.jpg"},{"type":"image","src":"images/po-06.jpg"}],"reservationClosed":true},{"img":"images/po-07.jpg","models":["갤럭시 Z플립8 | 256GB,512GB","갤럭시 Z폴드8 | 256GB,512GB,1TB","갤럭시 Z폴드8 울트라 | 512GB,1TB"],"title":"Galaxy Z Fold8 | Flip8 사전예약신청","date":"2026.07.28 ~ 2026.08.03","detail":[{"type":"text","content":"신청 방법: 사전예약 신청을 통해 원하시는 모델,성함,연락처를 남겨주시면 사전예약 시작과 동시에 순차적으로 안내드립니다."},{"type":"image","src":"images/po-261001-1.jpg"},{"type":"image","src":"images/po-09.jpg"},{"type":"image","src":"images/po-10.jpg"},{"type":"image","src":"images/po-11.jpg"},{"type":"image","src":"images/po-12.jpg"}],"reservationClosed":true}];</script></head>
+<script data-preorder="1">window.__savedPreorderData = [{"img":"images/po-261016-duo.jpg","title":"아이폰 DUO 사전예약 신청 ","date":"2026.10.16 ~ 2026.10.22","models":["iPhone Duo 256G 스타 화이트","iPhone Duo 512G 스타 화이트","iPhone Duo 256G 나이트 스카이","iPhone Duo 512G 나이트 스카이"],"detail":[{"type":"image","src":"images/po-261017-104704-1.jpg"},{"type":"image","src":"images/po-261017-104704-2.jpg"},{"type":"image","src":"images/po-261017-104704-3.jpg"}],"reservationClosed":true},{"img":"images/po-01.jpg","models":["아이폰 18 Pro | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디","아이폰 18 Pro Max | 256GB,512GB,1TB | 블랙,실버,글레이셔,버건디"],"title":"아이폰 18PRO | MAX  사전예약신청","date":"2026.09.12 ~ 2026.09.17","detail":[{"type":"image","src":"images/po-02.jpg"},{"type":"image","src":"images/po-03.jpg"},{"type":"image","src":"images/po-04.jpg"},{"type":"image","src":"images/po-05.jpg"},{"type":"image","src":"images/po-06.jpg"}],"reservationClosed":true},{"img":"images/po-07.jpg","models":["갤럭시 Z플립8 | 256GB,512GB","갤럭시 Z폴드8 | 256GB,512GB,1TB","갤럭시 Z폴드8 울트라 | 512GB,1TB"],"title":"Galaxy Z Fold8 | Flip8 사전예약신청","date":"2026.07.28 ~ 2026.08.03","detail":[{"type":"text","content":"신청 방법: 사전예약 신청을 통해 원하시는 모델,성함,연락처를 남겨주시면 사전예약 시작과 동시에 순차적으로 안내드립니다."},{"type":"image","src":"images/po-261001-1.jpg"},{"type":"image","src":"images/po-09.jpg"},{"type":"image","src":"images/po-10.jpg"},{"type":"image","src":"images/po-11.jpg"},{"type":"image","src":"images/po-12.jpg"}],"reservationClosed":true}];</script></head>
 <body class="">
 
 <!-- 비밀번호 모달 -->
@@ -452,7 +452,7 @@
   </div>
 </div>
 
-<div id="listView" style="display: none;">
+<div id="listView" style="display: block;">
   <div class="page-title-wrap">
     <div class="page-title-row">
       <div class="page-title">사전예약</div>
@@ -460,10 +460,10 @@
     </div>
   </div>
 
-  <div class="preorder-list" id="preorderList"><div class="preorder-card" data-idx="0">
+  <div class="preorder-list" id="preorderList"><div class="preorder-card reservation-closed" data-idx="0">
         <button type="button" class="card-delete-btn" onclick="deleteCard(0)">✕</button>
-        <button type="button" class="reservation-toggle-btn not-closed" onclick="toggleReservationClosed(0)">예약종료 처리</button>
-        
+        <button type="button" class="reservation-toggle-btn is-closed" onclick="toggleReservationClosed(0)">예약종료 해제</button>
+        <div class="reservation-closed-stamp">예약종료</div>
         <div class="preorder-img-wrap" onclick="handleCardImgClick(0)">
           <img src="images/po-261016-duo.jpg">
           <input type="file" accept="image/*" onchange="replaceImg(0, this)">
@@ -502,9 +502,9 @@
       </div><div class="add-card-btn">+ 카드 추가</div></div>
 </div>
 
-<div id="detailView" style="display: block;"></div>
+<div id="detailView" style="display: none;"></div>
 
-<div class="fab-cta fab-hide" id="listBottomCta" style="display:flex;">
+<div class="fab-cta" id="listBottomCta" style="display:flex;">
   <a class="fab-btn fab-kakao" href="https://pf.kakao.com/_xdxaxlxfX/chat" target="_blank" rel="noopener" aria-label="카카오톡 상담">
     <span class="fab-ico">💬</span>
   </a>
